@@ -42,6 +42,6 @@ Here below is an overview of the application architecture schema.
 
 ## About
 
-The SymPortal Framework and Flask application was written by Benjamin Hume.
+The SymPortal Framework and Flask application was written by [Benjamin Hume](benjamincchume@gmail.com).
 
-The architecture migration and CI/CD set up were made by Yulia Iakovleva.
+The architecture migration and CI/CD set up were made by [Yulia Iakovleva](yulia.iakovleva@uni-konstanz.de).
