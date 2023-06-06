@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/submit_data_learn_more.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <title>Submit data | learn more</title>
+</head>
+<body>
+    <!-- Nav Bar -->
+
+    
+    <div class="nav_background">
+         <div class="nav_bar">
+             <div class="nav_left">
+                <a href="https://padlet.com/chrisvoolstra/tddb7auy6n961um7">Reef Genomics Lab</a>
+            </div>
+            <div class="nav_right">
+                <a href="https://github.com/SymPortal/SymPortal_framework">source code</a><span class="vert_div_smll"></span><a href="https://github.com/SymPortal/SymPortal_framework/wiki/Welcome-to-SymPortal">wiki</a><span class="vert_div_smll"></span><a href="{{ url_for('index') }}">home</a>
+            </div>
+         </div>
+        <div class="logo_container">
+            <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}" alt="" class="logo">
+        </div>
+    </div>
+
+    
+    <!-- Continer that will constrain to 80% width -->
+    <div class="container">
+        <div class="submit_data_learn_more_content">
+            <!-- Main title of page -->
+            <h1>Submitting data to SymPortal</h1>
+            
+            <!-- subtitle of page -->
+            <h3>Why submit my data to SymPortal and how is my data used?</h3>
+            
+            <!-- Par that is made up of the section title paried with para and image -->
+            <div class="para pic_para_left">
+                <div class="para_image_container">
+                    <img src="{{ url_for('static', filename='images/text_one.jpg') }}" class="img-rnd" alt="text_one">
+                </div>
+                <div class="para_of_pic_para">
+                    <h4>Why submit my data?</h4>
+                    <p>Within the SymPortal analysis, a central principle is applied that enables SymPortal to
+                        distinguish between intra- and inter-genomic sources of ITS2 sequence variants.
+                        That principle is: the probability that a given set of ITS2 sequences found in a
+                        single coral sample are representative of a single Symbiodiniaceae genotype increases
+                        with the number of samples that set is found in. This principle is not new to SymPortal
+                        but rather has been used in DGGE-based methodologies for over 20 years. These gel-based
+                        methodologies have been able to successfully identify genetically distinct Symbiodiniaceae
+                        taxa that have been verified by additional genetic markers.	So what does this have to
+                        do with my data?
+                    </p>
+                </div>
+            </div>
+            
+            <div class="para non_pic_para">
+                <p>Let’s look at an example. Let’s say you have 96 samples in your dataset, and each of the samples in your dataset contains the same Symbiodiniaceae taxa. When run through an analysis, SymPortal will identify the same reoccurring sets of ITS2 sequences in each of your samples. These sequences will be identified as defining intragenomic variants (DIVs) and used to define an ITS2 type profile, e.g. C3-C3a-C3cc. SymPortal is predicting that this set of sequences is representative of a Symbiodiniaceae taxon. It makes this prediction based on the central principle explained above. Essentially, because your dataset contains a sufficient number of samples, with the same reoccurring sets of sequences, you enable SymPortal to make this prediction. In contrast, let’s consider a case where your dataset contains Symbiodiniaceae taxa that only occur in a low number of your samples. In this case, SymPortal will be limited in its ability to resolve these taxa. For example, if two of your samples contain a Symbiodiniaceae taxon not found in other samples of your dataset, SymPortal will not be able to predict an accurate ITS2 type profile for this taxon due to its inability to identify a common set of sequences that reoccur in multiple samples. In this situation, a conservative ITS2 type profile will be assigned to each of these samples. However, by running your dataset against the remotely hosted SymPortal database, you enable SymPortal to search all previously submitted samples for sets of sequences that are also found in your samples. By this means, you may find sets of sequences that match your two samples, in samples already found in the database. As such, the more samples are contained in a database, the greater our power to resolve putative Symbiodiniaceae taxa is.</p>
+            </div>
+
+            <!-- Par that is made up of the section title paried with para and image -->
+            <div class="para pic_para_right">
+                <div class="para_of_pic_para">
+                    <h4>How is my data used?</h4>
+                    <h5>Integration with other datasets to improve profile prediction power</h5>
+                    <P>Immediately after submission, other users of SymPortal
+                        will be able to benefit from your data, just as you will be able to benefit from theirs.
+                        This is because during the SymPortal analysis the sets of sequences found in your samples
+                        are also searched for in all other previously submitted samples (as described in the
+                        Why submit my data section above). If your samples share ITS2 type profiles in common with
+                        other samples in the database you will be informed of this in your ITS2 type profile output
+                        count table. For each ITS2 type profile an ‘ITS2 type abundance local’ and an ‘ITS2 type
+                        abundance DB' are reported. The former, subtracted from the latter, will give you an
+                        indication of how many samples in the database, that were not part of your data set,
+                        contained the ITS2 type profile in question. No other information from non-user
+                        samples are returned. Although, please see the embargo period below.</P>
+                    <h5>Embargo period</h5>
+                    <p> </p>
+                    <p> As of the 14th of July 2021, we are changing our embargo policy.<br><br>
+                        Previously, datasets submitted to SymPortal would remain embargoed until such a time
+                        that the datasets were made publicly available by the authors.
+                        Now, datasets will remain embargoed for a period of 1 year from the date of submission.<br><br>
+                        During this 1 year period, only the submitting user(s) will have access to
+                        their analysis results via the symportal.org DataExplorer.
+
+                        After this 1 year period, datasets will become available for public querying
+                        on symportal.org via the DataExplorer.
+                        Once public, count tables and meta information associated with datasets will be available
+                        for download by anyone.
+                        Should a dataset be made publicly available by the authors before the end of the 1 year period
+                        (e.g. through submission to NCBI or through association with an academic publication),
+                        the dataset will also be made publicly available in the symportal.org DataExplorer.
+                        <br><br>
+                        Users may request an extension of the embargo period close to the time of the
+                        embargo expiration, or ask for their dataset(s) to be removed from the database (at any point,
+                        before of after the 1 year period) by contacting:<br>
+                        <a style="color: #424242;"
+                           href="mailto:benjamincchume@gmail.com?Subject=new submission enquiry">
+                            &#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;
+                        </a>.
+                        <br><br>
+                        Datasets submitted before the 14th of July 2021 will remain embargoed
+                        indefinitely or until publication.
+                        <br><br>
+                        We have decided to make this change to our embargo policy to maximise the value of the
+                        SymPortal database to the scientific community. The SymPortal database contains > 30000
+                        samples and continues to grow steadily. As more of the world's host-associating
+                        Symbiodiniaceae diversity is sampled, we are seeing that ITS2 profiles are found
+                        in common between many datasets in the database. However, the value of this
+                        interconnectivity cannot be leveraged while the majority of datasets in the database remain
+                        embargoed, unpublished and ultimately inaccessible.
+                        Our change in embargo policy therefore aims to catalyse access to this
+                        information for the benefit of all users.
+                    </p>
+
+                </div>
+                <div class="para_image_container">
+                    <img src="{{ url_for('static', filename='images/text_two.JPG') }}" class="img-rnd" alt="text_two">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <footer >
+        <div class="foot_content">
+            <p>SymPortal: a novel analytical framework and platform for coral algal symbiont next-generation sequencing ITS2 profiling</p>
+            <p>Collaborators: 	<a href="https://padlet.com/chrisvoolstra/tddb7auy6n961um7">Reef Genomics Lab, University of Konstanz</a>;
+                                <a href="https://www.southampton.ac.uk/oes/research/facilities/corals.page">The Coral Reef Laboratory, Univerisity of Southampton</a>;
+                                <a href="https://nyuad.nyu.edu/en/research/centers-labs-and-projects/marine-biology-lab.html">Marine Biology Lab, NYU Abu Dhabi</a>;
+                                <a href="http://www.personal.psu.edu/tcl3/">The Symbiosis Ecology and Evolution Laboratory, Penn State</a>;</p>
+            <p>Images: <a href="https://rsrc.kaust.edu.sa/Pages/Radecker.aspx">N. Raedecker</a>, <a href="https://rsrc.kaust.edu.sa/Pages/Pogoreutz.aspx">C. Pogoreutz</a>, <a href="https://rsrc.kaust.edu.sa/Pages/Gegner.aspx">H. Gegner</a>. Acknowledgements logo: Alex Mercière.</p>
+            <br>
+            <p>Contact: <a href="mailto:benjamincchume@gmail.com?Subject=new submission enquiry">&#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;</a></p>
+        </div>
+    </footer>
+</body>
+</html>

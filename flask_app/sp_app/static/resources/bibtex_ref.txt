@@ -1,0 +1,6 @@
+@article{hume2019symportal,
+  title={SymPortal: A novel analytical framework and platform for coral algal symbiont next-generation sequencing ITS2 profiling},
+  author={Hume, Benjamin CC and Smith, Edward G and Ziegler, Maren and Warrington, Hugh JM and Burt, John A and LaJeunesse, Todd C and Wiedenmann, Joerg and Voolstra, Christian R},
+  journal={Molecular ecology resources},
+  publisher={Wiley Online Library}
+}

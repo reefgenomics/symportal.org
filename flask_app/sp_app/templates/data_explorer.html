@@ -1,0 +1,547 @@
+<!--TODO list:
+Remove the filtering sliders for the time being. Filtering can be integrated at a later date.
+Get rid of the modal for the distance plots. This can be integrated at a later date.
+Do the sample labels. For the main plots, we need to have a dynamic bottom margin that is adjusted
+according to name size, or we abbreviate the names when they are above a certain size.
+For the modal, we should likely have a maximum size of name and try to adjust to the center.
+For the time being perhaps just having a maximum size is the easiest way forwards and we 
+can integrate the centering at a later date. 
+PRIORITIES:
+    Use the sample proportions to add to the tool tip on the betwn sample plots
+-->
+
+<!--IDEAS:
+For the btwn sample distances, add a color for the proportion that the point represents
+in realtion to the sample.
+For the distance tool tips, also add information according to the colouring that is happening.
+For the meta info of the associated datasets and analysis have a description of the property come up when you hover
+
+In the sample and profile viewers (modals) make them extra large and allow to select (using shift key) two
+of the samples or profiles and then have the respective networks for those above one another or either
+side of the main dist plot.
+
+Implement zoom for the modal bar plots so that people can zoom in on sequences.
+
+Have a clade toggle for the sequence bar data so that it can be viewed as clade designations rather than individuals
+
+Have a dropdown that will allow the x axis labels to be changed from sample names, to uids to available
+items like locations
+
+Have a network window for when the sample is clicked on (this can be later)
+-->
+
+
+<!doctype html>
+<html lang="en">
+<meta charset="UTF-8">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/css/bootstrap-slider.css">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/data_explorer.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="{{ url_for('static', filename='js/d3-tip.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <title>SymPortal Study results</title>
+</head>
+<body>
+
+<!--NAVBAR-->
+<nav class="navbar bg-light navbar-expand-sm" style="border-bottom: 1px solid rgb(243,243,243);">
+
+    <!--To the left-->
+    <ul class="navbar-nav mr-auto">
+        <a class="navbar-brand" href="/">
+            <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}" alt="Logo" style="width:40px;">
+        </a>
+        <!--This should be the data set header that we are working with-->
+        <p class="nav navbar-text">SymPortal Explorer:</p>
+        <form action="{{ url_for('data_explorer') }}" method="POST">
+            <div class="form-group">
+                <select id="study_select" class="form-control" name="study_to_load" onchange="this.form.submit()">
+                    <option value="{{ study_to_load.name }}">{{ study_to_load.name }}</option>
+                    {% for study in published_and_authorised_studies %}
+                        <option value="{{ study.name }}">{{ study.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </ul>
+
+    <!--To the right-->
+    <ul class="navbar-nav">
+        <li class="nav-item" style="padding-top:0.5rem;">
+            {% if current_user.is_anonymous %}
+                <span style="padding-right:1rem;">Logged in as: <b>anonymous</b></span>
+            {% else %}
+                <span style="padding-right:1rem;">Logged in as: <b><a href="{{ url_for('profile') }}" style="text-decoration: underline;">{{ current_user.name }}</a></b></span>
+            {% endif %}
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+        </li>
+    </ul>
+</nav>
+
+
+<!--MAIN CONTENT-->
+<div class="row m-5">
+    <!--LHS-->
+    <div class="col-md-7">
+        <!--Title of the paper-->
+        <!-- If article URL available then make this a hyper link else keep the curent title -->
+        <h5 class="display-4" id='study_title' style="font-size:2rem;">
+        {% if study_to_load.article_url %}
+            {% if study_to_load.article_url != '--' %}
+                <a href="{{ study_to_load.article_url}}">{{ study_to_load.title }}</a>
+            {% else %}
+                {{ study_to_load.title }}
+            {% endif %}
+        {% else %}
+            {{ study_to_load.title }}
+        {% endif %}
+        </h5>
+        <!--Authors of the paper-->
+        <div class="d-flex flex-column p-3" style="color:#777">
+            <P id="authors">Authors: {{ study_to_load.author_list_string }}</P>
+        </div>
+
+        <!--POST MED SVG HOLDER-->
+        <div class="card mb-3 plot_item" id="post_med_card">
+            <div class="card-header d-inline-flex" data-toggle="collapse" data-target="#post_med_svg_collapse">
+                <div class="mr-auto">Post-MED ITS2 sequences</div>
+            </div>
+
+            <div class="card-body p-0 collapse show" id="post_med_svg_collapse">
+                <div id="post_med_progress_bar_container" style="width:100%; height:16px; background-color:grey; position: relative; display:none;">
+                    <div id="post_med_progress_bar" style="width:0%; background-color:green; height:16px; display:block;">
+
+                    </div>
+                    <div id="post_med_progress_bar_text_holder" style="position:absolute; top:0px; left:0px; height:10px; font-size: 10px; font-weight:bold; color: white;">
+                        
+                    </div>
+                </div>
+                <div class="bg-light p-2" >
+                    <div class="d-flex">
+                        <div class="btn-group btn-group-sm mr-auto" >
+                            <button id="PostMEDRelDType" class="btn btn-light dtype-btn" data-data-type="post_med" style="padding:2px 4px;font-size:0.7rem;border:1px solid lightgrey">relative</button>
+                            <button id="PostMEDAbsDType" class="btn btn-primary dtype-btn" data-data-type="post_med" style="padding:2px 4px;font-size:0.7rem;">absolute</button>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" style="padding:2px 4px;font-size:0.7rem;">
+                                   Sort by:
+                                </button>
+                                <div class="dropdown-menu svg_sort_by" data-data-type="post_med" style="padding:2px 4px;font-size:0.7rem;">
+                                    <!--populate at INIT if post-MED data available-->
+                                    <!--<a class="dropdown-item" >sequencing depth</a>-->
+                                    <!--<a class="dropdown-item" >sequencing similarity</a>-->
+                                    <!--<a class="dropdown-item" >host</a>-->
+                                    <!--<a class="dropdown-item" >location</a>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex viewer_link viewer_link_seq_prof" data-toggle="modal" data-target="#seq-prof-modal">
+                            <div class="">Open viewer</div>
+                            <i class="material-icons">launch</i>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="p-1 overflow-auto text-center">
+                    <svg id="chart_post_med" class="chart seq_prof_chart" width="650" height="400"></svg>
+                </div>
+            </div>
+            <div class="card-footer sample_meta_info_holder" style="font-size:0.5rem;">
+                <div class="d-flex">
+                    <div class="d-flex flex-wrap mr-auto primary_sample_meta">
+                    </div>
+                    <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#post_med_secondary_sample_meta" data-status="more" style="width:40px">more v</div>
+                </div>
+
+                <div class="collapse" id="post_med_secondary_sample_meta">
+                    <div class="d-flex flex-wrap secondary_sample_meta" >
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- SEQ-PROF-modal -->
+        <div class="modal fade plot_item" id="seq-prof-modal" style="height: 95vh;">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <div id="modal_progress_bar_container" style="width:100%; height:16px; background-color:grey; position: relative; display:none;">
+                            <div id="modal_progress_bar" style="width:0%; background-color:green; height:16px; display:block;">
+        
+                            </div>
+                            <div id="modal_progress_bar_text_holder" style="position:absolute; top:0px; left:0px; height:10px; font-size: 10px; font-weight:bold; color: white;">
+                                
+                            </div>
+                        </div>
+                        <div class="bg-light p-2" >
+                            <div class="d-flex">
+                                <div class="btn-group btn-group-sm mr-auto" >
+                                    <button id="ModalRelDType"  class="btn btn-light dtype-btn" data-data-type="post-profile" style="padding:2px 4px;font-size:0.7rem;border:1px solid lightgrey">relative</button>
+                                    <button id="ModalAbsDType"  class="btn btn-primary dtype-btn" data-data-type="post-profile" style="padding:2px 4px;font-size:0.7rem;">absolute</button>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" style="padding:2px 4px;font-size:0.7rem;">
+                                           Sort by:
+                                        </button>
+                                        <div class="dropdown-menu svg_sort_by" data-data-type="post-profile" style="padding:2px 4px;font-size:0.7rem;">
+                                            <!--Set at init-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-1 overflow-auto text-center">
+                            <svg id="chart_post_med_modal" class="chart seq_prof_chart" style="display:block;margin:auto;" ></svg>
+                            <svg id="chart_profile_modal" class="chart seq_prof_chart" style="display:block;margin:auto;" ></svg>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer" style="font-size:0.5rem;display:block;">
+                        <div class="pb-2 sample_meta_info_holder" style="border-bottom:1px solid lightgrey;">
+                            <div class="d-flex">
+                                <div class="d-flex flex-wrap mr-auto primary_sample_meta">
+                                </div>
+                                <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#seq_prof_modal_secondary_sample_meta" data-status="more" style="width:40px">more v</div>
+                            </div>
+
+                            <div class="collapse" id="seq_prof_modal_secondary_sample_meta">
+                                <div class="d-flex flex-wrap secondary_sample_meta" >
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pb-2 profile_meta_info_holder">
+                            <div class="d-flex">
+                                <div class="d-flex flex-wrap mr-auto primary_profile_meta">
+                                </div>
+                                <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#modal_secondary_profile_meta" data-status="more" style="width:40px">more v</div>
+                            </div>
+
+                            <div class="collapse" id="modal_secondary_profile_meta">
+                                <div class="d-flex flex-wrap secondary_profile_meta" >
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!--PROFILE SVG HOLDER-->
+        <div class="card mb-3 plot_item" id="profile_card">
+            <!--CARD HEADER-->
+            <div class="card-header" data-toggle="collapse" data-target="#profile_svg_collapse">
+                ITS2 type profiles
+            </div>
+            <!--CARD BODY-->
+            <div class="card-body p-0 collapse show" id="profile_svg_collapse">
+                <div id="profile_progress_bar_container" style="width:100%; height:16px; background-color:grey; position: relative; display:none;">
+                    <div id="profile_progress_bar" style="width:0%; background-color:green; height:16px; display:block;">
+
+                    </div>
+                    <div id="profile_progress_bar_text_holder" style="position:absolute; top:0px; left:0px; height:10px; font-size: 10px; font-weight:bold; color: white;">
+                        
+                    </div>
+                </div>
+                <div class="bg-light p-2" >
+                    <div class="d-flex">
+                        <div class="btn-group btn-group-sm mr-auto" >
+                            <button id="ProfileMEDRelDType" class="btn btn-light dtype-btn" data-data-type="profile" style="padding:2px 4px;font-size:0.7rem;border:1px solid lightgrey">relative</button>
+                            <button id="ProfileMEDAbsDType" class="btn btn-primary dtype-btn" data-data-type="profile" style="padding:2px 4px;font-size:0.7rem;">absolute</button>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" style="padding:2px 4px;font-size:0.7rem;">
+                                   Sort by:
+                                </button>
+                                <div class="dropdown-menu svg_sort_by" data-data-type="profile" style="padding:2px 4px;font-size:0.7rem;">
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex viewer_link viewer_link_seq_prof" data-toggle="modal" data-target="#seq-prof-modal">
+                            <div class="">Open viewer</div>
+                            <i class="material-icons">launch</i>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-1 overflow-auto text-center">
+                    <svg id="chart_profile" class="chart seq_prof_chart" width="650" height="400"></svg>
+                </div>
+            </div>
+            <div class="card-footer" style="font-size:0.5rem;">
+                <div class="pb-2 sample_meta_info_holder" style="border-bottom:1px solid lightgrey;">
+                    <div class="d-flex">
+                        <div class="d-flex flex-wrap mr-auto primary_sample_meta">
+                        </div>
+                        <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#profile_secondary_sample_meta" data-status="more" style="width:40px">more v</div>
+                    </div>
+
+                    <div class="collapse" id="profile_secondary_sample_meta">
+                        <div class="d-flex flex-wrap secondary_sample_meta" >
+
+                        </div>
+                    </div>
+                </div>
+                <div class="pb-2 profile_meta_info_holder">
+                    <div class="d-flex">
+                        <div class="d-flex flex-wrap mr-auto primary_profile_meta">
+                        </div>
+                        <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#profile_secondary_profile_meta" data-status="more" style="width:40px">more v</div>
+                    </div>
+
+                    <div class="collapse" id="profile_secondary_profile_meta">
+                        <div class="d-flex flex-wrap secondary_profile_meta" >
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!--BTWN sample distances-->
+        <div class="card mb-3 plot_item" id="between_sample_distances">
+            <div class="card-header d-inline-flex" data-toggle="collapse" data-target="#btwn_sample_dist_collapse">
+                <div class="mr-auto">Genera separated between sample distances</div>
+                <div class="genera_identifier" style="font-weight:bold;font-style: italic;"></div>
+            </div>
+            <div class="card-body p-0 collapse show" id="btwn_sample_dist_collapse">
+                <div class="bg-light p-2" >
+                    <div class="d-flex">
+                        <div class="btn-group btn-group-sm mr-auto" >
+                            <!-- genus selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle genera_select_button" data-toggle="dropdown" data-genera="Genera:" style="padding:2px 4px;font-size:0.7rem;">
+                                   Genera:
+                                </button>
+                                <div class="dropdown-menu genera_select" data-data-type="sample" style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                            <!-- color selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle color_select_button" data-toggle="dropdown" data-color="no_color" style="padding:2px 4px;font-size:0.7rem;">
+                                   no_color
+                                </button>
+                                <div class="dropdown-menu color_select" data-data-type="sample" style="padding:2px 4px;font-size:0.7rem;">
+
+                                </div>
+                            </div>
+                            <!-- pc selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle pc_selector" data-toggle="dropdown" data-pc="PC2" style="padding:2px 4px;font-size:0.7rem;">
+                                PC2
+                                </button>
+                                <div class="dropdown-menu pc_select" data-data-type='sample' style="padding:2px 4px;font-size:0.7rem;">
+
+                                </div>
+                            </div>
+                            <!-- distance method selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle distance_method_selector" data-toggle="dropdown" data-dist="none" style="padding:2px 4px;font-size:0.7rem;">
+                                   not initiated
+                                </button>
+                                <div class="dropdown-menu distance_method_select" data-data-type='sample' style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                            <!-- transformation selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle sqrt_selector" data-toggle="dropdown" data-trans="none" style="padding:2px 4px;font-size:0.7rem;">
+                                   not initiated
+                                </button>
+                                <div class="dropdown-menu sqrt_select" data-data-type='sample' style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-1 overflow-auto text-center">
+                    <!--BTWN sample svg-->
+                    <svg id="chart_btwn_sample" class="chart dist_chart dist_chart_sample" width="400" height="400"></svg>
+                </div>
+            </div>
+            <div class="card-footer sample_meta_info_holder" style="font-size:0.5rem;">
+                <div class="d-flex">
+                    <div class="d-flex flex-wrap mr-auto primary_sample_meta">
+                    </div>
+                    <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#btwn_sample_secondary_sample_meta" data-status="more" style="width:40px">more v</div>
+                </div>
+
+                <div class="collapse" id="btwn_sample_secondary_sample_meta">
+                    <div class="d-flex flex-wrap secondary_sample_meta" >
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--BTWN profile distances-->
+        <div class="card mb-3 plot_item" id="between_profile_distances">
+            <!--HEADER-->
+            <div class="card-header d-inline-flex" data-toggle="collapse" data-target="#btwn_profile_dist_collapse">
+                <div class="mr-auto">Genera separated between profile distances</div>
+                <div class="genera_identifier" style="font-weight:bold;font-style: italic;"></div>
+            </div>
+
+            <!--BODY-->
+            <div class="card-body p-0 collapse show" id="btwn_profile_dist_collapse">
+                <div class="bg-light p-2" >
+                    <div class="d-flex">
+                        <div class="btn-group btn-group-sm mr-auto" >
+                            <!-- genus selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle genera_select_button" data-toggle="dropdown" style="padding:2px 4px;font-size:0.7rem;">
+                                   Genera:
+                                </button>
+                                <div class="dropdown-menu genera_select" data-data-type="profile" style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                            <!-- color selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle color_select_button" data-toggle="dropdown" data-color="profile_identity" style="padding:2px 4px;font-size:0.7rem;">
+                                   profile_identity
+                                </button>
+                                <div class="dropdown-menu color_select" data-data-type="profile" style="padding:2px 4px;font-size:0.7rem;">
+
+                                </div>
+                            </div>
+                            <!-- pc selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle pc_selector" data-toggle="dropdown" data-pc="PC2" style="padding:2px 4px;font-size:0.7rem;">
+                                   PC2
+                                </button>
+                                <div class="dropdown-menu pc_select" data-data-type='profile' style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                            <!-- distance method selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle distance_method_selector" data-toggle="dropdown" data-dist="none" style="padding:2px 4px;font-size:0.7rem;">
+                                   not initiated
+                                </button>
+                                <div class="dropdown-menu distance_method_select" data-data-type='profile' style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                            <!-- transformation selector -->
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle sqrt_selector" data-toggle="dropdown" data-trans="none" style="padding:2px 4px;font-size:0.7rem;">
+                                   not initiated
+                                </button>
+                                <div class="dropdown-menu sqrt_select" data-data-type='profile' style="padding:2px 4px;font-size:0.7rem;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-1 overflow-auto text-center">
+                    <svg id="chart_btwn_profile" class="chart dist_chart" width="400" height="400"></svg>
+                </div>
+            </div>
+
+            <!--FOOTER-->
+            <div class="card-footer" style="font-size:0.5rem;">
+                <div class="pb-2 profile_meta_info_holder">
+                    <div class="d-flex">
+                        <div class="d-flex flex-wrap mr-auto primary_profile_meta">
+                        </div>
+                        <div class="secondary_meta_info_collapser" data-toggle="collapse" data-target="#btwn_profile_secondary_sample_meta" data-status="more" style="width:40px">more v</div>
+                    </div>
+
+                    <div class="collapse" id="btwn_profile_secondary_sample_meta">
+                        <div class="d-flex flex-wrap secondary_profile_meta" >
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--RHS-->
+    <div class="col-md-5">
+        <!--CARDS-->
+        <div class="card mb-3", id="dataset_meta_info_card">
+            <div class="card-header" data-toggle="collapse" data-target="#dataset_info_collapse">
+                Associated Datasets
+            </div>
+
+            <div class="card-body collapse show" id="dataset_info_collapse">
+                <div class="row">
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+        <div class="card mb-3", id="analysis_meta_info_card">
+            <div class="card-header" data-toggle="collapse" data-target="#analysis_info_collapse">
+                Analysis
+            </div>
+            <div class="card-body collapse" id="analysis_info_collapse">
+                <div class="row">
+                    
+                </div>
+                
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header" data-toggle="collapse" data-target="#resource_download_info_collapse">
+                Resource download
+            </div>
+            <div class="card-body collapse" id="resource_download_info_collapse" style="font-size:0.8rem;">
+                <div class="row" >
+                    
+                </div>
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('get_study_data', study_name=study_to_load.name, file_path=study_to_load.name + '.zip') }}">Download all</a>
+            </div>
+          </div>
+
+        </div>
+        <!--MAP-->
+        <span class="map_elelement" id="map_helper_text" style="font-size:0.5rem;font-weight:bold;"></span>
+        <div class="map_elelement" id="map" style="height:400px;border:1px solid black;"></div>
+
+    </div>
+    </div>
+
+<script type="text/javascript">
+    let study_to_load = "{{  study_to_load.name }}";
+    {% if study_to_load.analysis %}
+    let analysis = true;
+    {% else %}
+    let analysis = false;
+    {% endif %}
+</script>
+<script src="{{ url_for('get_study_data', study_name=study_to_load.name, file_path='study_data.js') }}"></script>
+
+<!--TODO to enable the marker clustering we will need to have the library on the server-->
+<!--<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">-->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/classes/InformationCardPopulator.js') }}"></script>
+<script src="{{ url_for('static', filename='js/classes/SimpleStackedBarPlot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/classes/ModalStackedBarPlot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/classes/DistancePlot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/classes/SampleLocationMap.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data_explorer.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/bootstrap-slider.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key={{ map_key }}"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</body>
+</html>

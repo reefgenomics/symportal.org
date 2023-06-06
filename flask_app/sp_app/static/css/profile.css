@@ -1,0 +1,33 @@
+body{
+    background: rgba(250,250,252);
+    margin: 0;
+    color: rgb(49,46,45);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.center_container{
+    width:100%;
+    height:100%;
+}
+
+.inner_container{
+    width:60%;
+    background: rgb(245,245,245);
+    margin: auto;
+}
+
+.username_title{
+    text-align: center;
+}
+
+.link_button{
+    background: none!important;
+  border: none;
+  padding: 0!important;
+  /*optional*/
+  font-family: arial, sans-serif;
+  /*input has OS specific font-family*/
+  color: #069;
+  text-decoration: underline;
+  cursor: pointer;
+}

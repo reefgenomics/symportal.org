@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+
+  database:
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    restart: always
+    container_name: ${SYMPORTAL_DATABASE_CONTAINER}
+
+  flask-app:
+    build:
+      context: ./flask_app
+    ports:
+      - "5000:5000"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - SYMPORTAL_DATABASE_CONTAINER=${SYMPORTAL_DATABASE_CONTAINER}
+    depends_on:
+      - database
+    container_name: ${SYMPORTAL_FLASK_CONTAINER}
+
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    environment:
+      - SYMPORTAL_FLASK_CONTAINER=${SYMPORTAL_FLASK_CONTAINER}
+    depends_on:
+      - flask-app
+    container_name: ${SYMPORTAL_NGINX_CONTAINER}
+
+  symportal-framework:
+    build:
+      context: ./symportal_framework
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - SYMPORTAL_DATABASE_CONTAINER=${SYMPORTAL_DATABASE_CONTAINER}
+    command: ./symportal_framework/wait-for-db.sh
+    depends_on:
+      - database
+    entrypoint: /app/entrypoint.sh
+    container_name: ${SYMPORTAL_FRAMEWORK_CONTAINER}

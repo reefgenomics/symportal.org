@@ -1,0 +1,67 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta property="og:site_name" content="symportal.org">
+    <meta property="og:description" content="a novel analytical framework and platform for coral algal symbiont NGS ITS2 profiling">
+    <meta property="og:image" content="{{ url_for('static', filename='images/preview_img.jpg') }}">
+    <meta property="og:url" content="http://symportal.org/">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    
+    <title>Symportal | profile</title>
+</head>
+<body>
+    <div class="center_container">
+        <div class="inner_container">
+            <div class="card">
+                <div class="card-header text-center">
+                    <a href="{{ url_for('index') }}" style="text-decoration: underline; float:right">Home</a>
+                </div>
+                <div class="card-body text-left">
+                    <h7 class="card-title">Sign In</h7>
+                    <hr>
+                    <form action="" method="post" novalidate>
+                        {{ form.hidden_tag() }}
+                        <p>
+                            {{ form.username.label }}<br>
+                            {{ form.username(size=32) }}
+                            {% for error in form.username.errors %}
+                                <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                        </p>
+                        <p>
+                            {{ form.password.label }}<br>
+                            {{ form.password(size=32) }}
+                            {% for error in form.password.errors %}
+                                <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                        </p>
+                        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+                        <p>{{ form.submit() }}</p>
+                    </form>
+                    <hr>
+                    <p><b>User self-registration is currently not supported. If you require access to your remotely analysed data please contact <a href="mailto:benjamincchume@gmail.com?Subject=new submission enquiry">&#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;</a></b></p>
+
+                </div>
+                <div class="card-footer text-muted" style="font-size: small;">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                        <ul>
+                            {% for message in messages %}
+                            <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                </div>
+        </div>
+    </div>
+    
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>

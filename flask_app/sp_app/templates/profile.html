@@ -1,0 +1,116 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta property="og:site_name" content="symportal.org">
+    <meta property="og:description" content="a novel analytical framework and platform for coral algal symbiont NGS ITS2 profiling">
+    <meta property="og:image" content="{{ url_for('static', filename='images/preview_img.jpg') }}">
+    <meta property="og:url" content="http://symportal.org/">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    
+    <title>Symportal | profile</title>
+</head>
+<body>
+    <div class="center_container">
+        <div class="inner_container">
+            <div class="card">
+                <div class="card-header text-center">
+                    {{ current_user.name }}
+                    <a href="{{ url_for('index') }}" style="text-decoration: underline; float:right">Home</a>
+                </div>
+                <div class="card-body text-left">
+                    <h7 class="card-title">User authorised data sets</h7>
+                    <div class="table-responsive">
+                        <table class="table table-hover mx-auto w-auto" style="font-size: x-small;">
+                            <thead>
+                                <tr>
+                                <th>Study Name</th>
+                                <th>Timestamp</th>
+                                <th>Published</th>
+                                <th>Authorised Users</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for study in user_authorised_studies %}
+                                <tr>
+                                <td>
+                                    {% if study.data_explorer %}
+                                    <form action="" method="POST">
+                                        <button class="link_button" name="study_to_load" value="{{ study.name }}">
+                                            {{study.name}}
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    {{study.name}}
+                                    {% endif %}
+                                </td>
+                                <!-- Work out what to do about a time stamp -->
+                                <td>{{study.upload_timestamp}}</td>
+                                <td>{{study.is_published}}</td>
+                                <td>
+                                    {% for user in study.users %}
+                                        {{ user.name }}<br>
+                                    {% endfor %}
+                                </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    {% if admin_authorised_studies %}
+                    <h7 class="card-title">Admin authorised data sets</h7>
+                    <div class="table-responsive">
+                        <table class="table table-hover mx-auto w-auto" style="font-size: x-small;">
+                            <thead>
+                                <tr>
+                                <th>Study Name</th>
+                                <th>Timestamp</th>
+                                <th>Published</th>
+                                <th>Authorised Users</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for study in admin_authorised_studies %}
+                                <tr>
+                                <td>
+                                    {% if study.data_explorer %}
+                                    <form action="" method="POST">
+                                        <button class="link_button" name="study_to_load" value="{{ study.name }}">
+                                            {{study.name}}
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    {{study.name}}
+                                    {% endif %}
+                                </td>
+                                <td>{{study.upload_timestamp}}</td>
+                                <td>{{study.is_published}}</td>
+                                <td>
+                                    {% for user in study.users %}
+                                        {{ user.name }}<br>
+                                    {% endfor %}
+                                </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted text-right" style="font-size: small;">
+                    <a style="float:left;" href="{{ url_for('logout') }}">Logout</a>
+                    <a style="float:right;" href="{{ url_for('change_password') }}">Change password</a>
+                </div>
+                </div>
+        </div>
+    </div>
+    
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+

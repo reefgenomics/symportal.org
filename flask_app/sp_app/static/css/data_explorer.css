@@ -1,0 +1,106 @@
+.card-header:hover{
+    border:1px solid gray;
+    cursor:pointer;
+}
+
+.card{
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    background-color: #fff;
+    border-radius: 2px;
+}
+
+.viewer_link:hover{
+    cursor:pointer;
+    color: #0056B3;
+}
+
+.d3-tip{
+    z-index: 1151 !important;
+}
+
+.btn-light{
+    border: 1px solid #ced4da;
+}
+
+.slider-handle{
+    width: 15px;
+    height: 15px;
+    /* background-image: linear-gradient(to bottom, lightgrey 0%, grey 100%);;*/
+    background-color: lightgrey;
+    background-image: none;
+    border:1px solid #ced4da;
+}
+
+.grey_axis{
+    color: lightgrey;
+
+}
+
+.secondary_meta_info_collapser:hover{
+    cursor:pointer;
+    color: #0056B3;
+}
+
+.data_property,.data_value{
+    width:100%;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    white-space:nowrap;
+    font-size:0.7rem;
+}
+
+.data_property:hover,.data_value:hover{
+    
+    overflow:visible;
+    white-space:normal;
+    
+}
+
+.data_property{
+    font-weight: bold;
+    text-align: right;
+    padding-right: 2px;
+}
+
+.data_value{
+    padding-left:2px;
+}
+
+.iwindowprop{
+    font-weight:bold;
+}
+.iwindowval{
+    padding-right:4px;
+}
+
+.map_info_window{
+    font-size:0.5rem;
+}
+
+.tooltip{
+    font-size:0.8rem;
+    opacity:0.9;
+    background-color: rgba(255,255,255,1);
+}
+
+#study_select{
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background-color: rgb(247,247,247);
+    border:none;
+    color:#212529;
+    appearance: none;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgeD0iMTJweCIgeT0iMHB4IiB3aWR0aD0iMjRweCIgaGVpZ2h0PSIzcHgiIHZpZXdCb3g9IjAgMCA2IDMiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDYgMyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBvbHlnb24gcG9pbnRzPSI1Ljk5MiwwIDIuOTkyLDMgLTAuMDA4LDAgIi8+PC9zdmc+);
+    background-position: 98% center;
+    background-repeat: no-repeat;
+    outline: none;
+    padding-right: 12px;
+    width:110%;
+}
+
+#study_select:hover{
+    cursor:pointer;
+    color: #0056B3;
+}
+
+option{color:#212529;}
