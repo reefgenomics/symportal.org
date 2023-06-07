@@ -3,7 +3,7 @@ version: "3"
 services:
 
   database:
-    image: postgres:latest
+    image: postgres:15.3
     ports:
       - "5433:5432"
     environment:
@@ -32,8 +32,11 @@ services:
       context: ./nginx
     ports:
       - "80:80"
+      - "443:443"
     environment:
       - SYMPORTAL_FLASK_CONTAINER=${SYMPORTAL_FLASK_CONTAINER}
+    volumes:
+      - /etc/ssl/symportal:/etc/nginx/certs:ro
     depends_on:
       - flask-app
     container_name: ${SYMPORTAL_NGINX_CONTAINER}
