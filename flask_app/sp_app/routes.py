@@ -227,9 +227,7 @@ def profile():
         # Then someone has clicked on one of the study titles
         # and we should send them to the DataExplorer view of respective study
         # get the google maps api key to be used
-        map_key_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static', 'utils', 'google_maps_api_key.txt')
-        with open(map_key_path) as f:
-            map_key = f.read().rstrip()
+        map_key = os.environ.get('GOOGLE_MAPS_API_KEI')
         # Here we are going to load the data_explorer page
         # We will need to provide the database object that represents the study_to_load string
         # provided by the request.
