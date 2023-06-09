@@ -1,0 +1,571 @@
+
+{
+    "studies" : [
+        {
+            "name":"hume_et_al_2019",
+            "title":"SymPortal: A novel analytical framework and platform for coral algal symbiont next‐generation sequencing ITS2 profiling",
+            "is_published":true,
+            "location":"Persian/Arabian Gulf",
+            "run_type":"remote",
+            "article_url":"https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.13004",
+            "data_url":"http://dx.doi.org/10.5061/dryad.h6s54", 
+            "data_explorer":false,
+            "analysis": true,
+            "author_list_string": "Benjamin C. C. Hume, Edward G. Smith, Maren Ziegler, Hugh J. M. Warrington, John A. Burt, Todd C. LaJeunesse, Joerg Wiedenmann, Christian R. Voolstra",
+            "additional_markers":"psbAncr",
+            "data_sets":[353],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"camp_et_al_2019",
+            "title":"Mangrove lagoons of the Great Barrier Reef support coral populations persisting under extreme environmental conditions",
+            "is_published":true,
+            "location":"GBR",
+            "run_type":"remote",
+            "article_url":"https://www.int-res.com/articles/feature/m625p001.pdf",
+            "data_url":"--",
+            "data_explorer":true,
+            "analysis": true,
+            "author_list_string": "Emma F. Camp, John Edmondson, Annabelle Doheny, John Rumney, Amanda J. Grima, Alfredo Huete, David J. Suggett",
+            "additional_markers":"--",
+            "data_sets":[437],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"camp_et_al_2020",
+            "title":"Corals exhibit distinct patterns of microbial reorganisation to thrive in an extreme inshore environment",
+            "location":"New Caledonia",
+            "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://link.springer.com/article/10.1007/s00338-019-01889-3",
+            "data_url":"https://www.ncbi.nlm.nih.gov/bioproject/PRJNA510616", "is_published":true, "data_explorer":true,
+            "author_list_string": "Emma F. Camp, David J. Suggett, Claudia Pogoreutz, Matthew R. Nitschke, Fanny Houlbreque, Benjamin CC Hume, Stephanie Gardner, Marco Zampighi, Riccardo Rodolfo-Metalpa, Christian Voolstra",
+            "analysis": true,
+            "data_sets":[436],
+            "data_set_samples":[]
+        },
+
+        {
+            "name":"gardener_et_al_2019",
+            "title":"Coral microbiome diversity reflects mass coral bleaching susceptibility during the 2016 El Niño heat wave",
+            "location":"Seychelles", 
+            "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://onlinelibrary.wiley.com/doi/full/10.1002/ece3.4662",
+            "data_url":"https://www.ncbi.nlm.nih.gov/bioproject/PRJNA477732", "is_published":true, "data_explorer":true,
+            "author_list_string": "Stephanie G. Gardner  Emma F. Camp  David J. Smith  Tim Kahlke  Eslam O. Osman  Gilberte Gendron  Benjamin C. C. Hume  Claudia Pogoreutz  Christian R. Voolstra  David J. Suggett",
+            "analysis": true,
+            "data_sets":[435],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"klein_et_al_2019",
+            "title":"Night-time temperature reprieves enhance the thermal tolerance of a symbiotic Cnidarian",
+            "location":"Red Sea",
+            "additional_markers":"--",
+            "run_type":"local&remote",
+            "article_url":"https://www.frontiersin.org/articles/10.3389/fmars.2019.00453/full",
+            "data_url":"https://www.ncbi.nlm.nih.gov/bioproject/PRJNA494341", 
+            "is_published":true, "data_explorer":true, 
+            "author_list_string": "Shannon G. Klein, Kylie A. Pitt, Cathy H. Lucas, Shiou-Han Hung, Sebastian Schmidt-Roach, Manuel Aranda and Carlos M. Duarte",
+            "analysis": false,
+            "data_sets":[438],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"terraneo_et_al_2019",
+            "title":"Environmental latitudinal gradients and host‐specificity shape Symbiodiniaceae distribution in Red Sea Porites corals",
+            "location":"Red Sea",
+            "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://onlinelibrary.wiley.com/doi/full/10.1111/jbi.13672",
+            "data_url":"https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjbi.13672&file=jbi13672-sup-0001-AppendixS1.docx", 
+            "is_published":true, "data_explorer":true,
+            "author_list_string": "Tullia I Terraneo, Marco Fusi, Benjamin CC Hume, Roberto Arrigoni, Christian R Voolstra, Francesca Benzoni, Zac H Forsman, Michael L Berumen",
+            "analysis": true,
+            "data_sets":[434],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"hume_et_al_2020",
+            "title":"Fine-scale delineation of Symbiodiniaceae genotypes on a previously bleached central Red Sea reef system demonstrates a prevalence of coral host-specific associations",
+            "location":"Red Sea", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://link.springer.com/article/10.1007/s00338-020-01917-7",
+            "data_url":"https://www.ncbi.nlm.nih.gov/sra/PRJNA565621",
+            "is_published":true, "data_explorer":true,
+            "author_list_string": "Benjamin CC Hume, Alejandro Restrepo, Christian R Voolstra, Michael L Berumen",
+            "analysis": true,
+            "data_sets":[432],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"damjanovic_et_al_2019a",
+            "title":"Bacterial and algal symbiont dynamics in early recruits exposed to two adult coral species",
+            "location":"GBR", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://link.springer.com/article/10.1007/s00338-019-01871-z#Sec2",
+            "data_url":"http://www.ncbi.nlm.nih.gov/bioproject/527938", "is_published":true, "data_explorer":true,
+            "author_list_string": "Katarina Damjanovic, Linda L. Blackall, Patricia Menéndez, Madeleine J. H. van Oppen",
+            "analysis": true,
+            "data_sets":[471],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"damjanovic_et_al_2019b",
+            "title":"Mixed-mode bacterial transmission in the common brooding coral Pocillopora acuta",
+            "location":"GBR", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://sfamjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/1462-2920.14856",
+            "data_url":"http://www.ncbi.nlm.nih.gov/bioproject/525296,", "is_published":true, "data_explorer":true,
+            "author_list_string": "Damjanovic K, Menéndez P, Blackall LL, van Oppen MJH",
+            "analysis": true,
+            "data_sets":[470],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"ed_24_07_17_singapore",
+            "title":"ed_24_07_17_singapore",
+            "location":"Singapore", "additional_markers":"psbAncr",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[466],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"20191107_smith",
+            "title":"20191107_smith",
+            "location":"Persian/Arabian Gulf", "additional_markers":"psbAncr",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true, 
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[440],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"20191212_roberty",
+            "title":"20191212_roberty",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[472],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"20191215_torda",
+            "title":"20191215_torda",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[467],
+            "data_set_samples":[]
+        },
+    
+        {
+            "name":"20191211_dungan",
+            "title":"20191211_dungan",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[469],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20191211_nitschke",
+            "title":"20191211_nitschke",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[474],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200106_starko",
+            "title":"20200106_starko",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[476],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200121_tara_negatives",
+            "title":"tara negative control samples",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": false,
+            "data_sets":[484],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200326_tara_coral",
+            "title":"tara coral samples",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[498],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200129_lopez_lonodo",
+            "title":"20200129_lopez_lonodo",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[488],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200209_guohui",
+            "title":"20200209_guohui",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[489],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200326_tara_non_corals",
+            "title":"tara non-coral samples",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": false,
+            "data_sets":[501],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200312_vanstone",
+            "title":"20200312_vanstone",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[493],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200318_chen",
+            "title":"20200318_chen",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[494],
+            "data_set_samples":[]
+        },
+        {
+            "name":"howells_et_al_2020",
+            "title":"Corals in the hottest reefs in the world exhibit symbiont fidelity not flexibility",
+            "location":"Persian/Arabian Gulf", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"https://onlinelibrary.wiley.com/doi/full/10.1111/mec.15372",
+            "data_url":"https://www.ncbi.nlm.nih.gov/nuccore/PRJNA532516", "is_published":true, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[378],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200330_buerger",
+            "title":"20200330_buerger",
+            "location":"AIMS", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[500],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20191113_almealla",
+            "title":"20191113_almealla",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[464],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200401_tsang",
+            "title":"20200401_tsang",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[502],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200401_lewis",
+            "title":"20200401_lewis",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[503],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20171123_caroline_non_intra_samples",
+            "title":"20171123_caroline_non_intra_samples",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[504],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200429_greenwood_IndoAntTrans",
+            "title":"20200429_greenwood_IndoAntTrans",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[512],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200429_greenwood_SeyTrans",
+            "title":"20200429_greenwood_SeyTrans",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[511],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20200429_tayaban",
+            "title":"20200429_tayaban",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[513],
+            "data_set_samples":[]
+        },
+        {
+            "name":"20190331_botte",
+            "title":"20190331_botte",
+            "location":"--", "additional_markers":"--",
+            "run_type":"remote",
+            "article_url":"--",
+            "data_url":"--", "is_published":false, "data_explorer":true,
+            "author_list_string": "--",
+            "analysis": true,
+            "data_sets":[514],
+            "data_set_samples":[]
+        }
+
+    ],
+    "users" : [
+        {
+            "name":"humebc",
+            "is_admin":true,
+            "studies":["hume_et_al_2019", "hume_et_al_2020", 
+                "terraneo_et_al_2019", "gardener_et_al_2019", "camp_et_al_2020", "ed_24_07_17_singapore",
+                "20191107_smith", "20200121_tara_negatives", "20200326_tara_coral", "20200326_tara_non_corals", 
+                "howells_et_al_2020", "20171123_caroline_non_intra_samples"]
+        },
+        {
+            "name":"crvoolstra",
+            "is_admin":true,
+            "studies":["hume_et_al_2019", "hume_et_al_2020", 
+                "terraneo_et_al_2019", "gardener_et_al_2019", "camp_et_al_2020", "ed_24_07_17_singapore",
+                "20191107_smith", "20200121_tara_negatives", "20200326_tara_coral", "20200326_tara_non_corals",
+                "howells_et_al_2020", "20171123_caroline_non_intra_samples"]
+        },
+        {
+            "name":"ecamp",
+            "is_admin":false,
+            "studies":["camp_et_al_2019", "camp_et_al_2020"]
+        },
+        {
+            "name":"sgardner",
+            "is_admin":false,
+            "studies":["gardener_et_al_2019"]
+        },
+        {
+            "name":"egsmith",
+            "is_admin":false,
+            "studies":["ed_24_07_17_singapore", "20191107_smith"]
+        },
+        {
+            "name":"kdamjanovic",
+            "is_admin":false,
+            "studies":["damjanovic_et_al_2019a", "damjanovic_et_al_2019b"]
+        },
+        {
+            "name":"sklein",
+            "is_admin":false,
+            "studies":["klein_et_al_2019"]
+        },
+        {
+            "name":"sroberty",
+            "is_admin":false,
+            "studies":["20191212_roberty"]
+        },
+        {
+            "name":"gtorda",
+            "is_admin":false,
+            "studies":["20191215_torda"]
+        },
+        {
+            "name":"adungan",
+            "is_admin":false,
+            "studies":["20191211_dungan"]
+        },
+        {
+            "name":"lhartman",
+            "is_admin":false,
+            "studies":["20191211_dungan"]
+        },
+        {
+            "name":"mnitschke",
+            "is_admin":false,
+            "studies":["20191211_nitschke"]
+        },
+        {
+            "name":"sstarko",
+            "is_admin":false,
+            "studies":["20200106_starko"]
+        },
+        {
+            "name":"sroitman",
+            "is_admin":false,
+            "studies":["20200129_lopez_lonodo"]
+        },
+        {
+            "name":"taracollab",
+            "is_admin":false,
+            "studies":["20200121_tara_negatives", "20200326_tara_coral", "20200326_tara_non_corals"]
+        },
+        {
+            "name":"guohui",
+            "is_admin":false,
+            "studies":["20200209_guohui"]
+        },
+        {
+            "name":"rvanstone",
+            "is_admin":false,
+            "studies":["20200312_vanstone"]
+        },
+        {
+            "name":"ychen",
+            "is_admin":false,
+            "studies":["20200318_chen"]
+        },
+        {
+            "name":"pbuerger",
+            "is_admin":false,
+            "studies":["20200330_buerger"]
+        },
+        {
+            "name":"ralmealla",
+            "is_admin":false,
+            "studies":["20191113_almealla"]
+        },
+        {
+            "name":"ltsang",
+            "is_admin":false,
+            "studies":["20200401_tsang"]
+        },
+        {
+            "name":"clewis",
+            "is_admin":false,
+            "studies":["20200401_lewis"]
+        },
+        {
+            "name":"cdube",
+            "is_admin":false,
+            "studies":["20171123_caroline_non_intra_samples"]
+        },
+        {
+            "name":"amerciere",
+            "is_admin":false,
+            "studies":["20171123_caroline_non_intra_samples"]
+        },
+        {
+            "name":"bgreenwood",
+            "is_admin":false,
+            "studies":["20200429_greenwood_IndoAntTrans", "20200429_greenwood_SeyTrans"]
+        },
+        {
+            "name":"ktayaban",
+            "is_admin":false,
+            "studies":["20200429_tayaban"]
+        },
+        {
+            "name":"ebotte",
+            "is_admin":false,
+            "studies":["20190331_botte"]
+        }
+    ]
+}

@@ -24,4 +24,3 @@ login = LoginManager(app)
 login.login_view = 'login'
 
 from sp_app import routes, models
-

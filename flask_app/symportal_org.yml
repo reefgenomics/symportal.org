@@ -28,6 +28,8 @@ dependencies:
   - mccabe
   - ncurses
   - openssl
+  - openpyxl
+  - pandas
   - paramiko
   - pip
   - psycopg2
@@ -47,4 +49,5 @@ dependencies:
   - wrapt
   - wtforms
   - xz
+  - xlrd
   - zlib

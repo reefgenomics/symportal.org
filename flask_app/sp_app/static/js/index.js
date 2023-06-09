@@ -18,6 +18,17 @@ $(document).ready(function() {
             "dom": 'lrt<"d-flex m-0 p-0"<"col mr-auto p-0"i><"col p-0"f>>p'
         }
     );
+
+    $('#pending_submissions_table').DataTable(
+        {
+            scrollX: false,
+            scrollY: 400,
+            scrollCollapse: true,
+            paging: false,
+            // https://datatables.net/reference/option/dom
+            "dom": 'lrt<"d-flex m-0 p-0"<"col mr-auto p-0"i><"col p-0"f>>p'
+        }
+    );
     
     $('#resources_table').DataTable(
         {

@@ -3,6 +3,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from sp_app import login
+from sqlalchemy.orm import relationship
 
 @login.user_loader
 def load_user(id):
@@ -41,6 +42,7 @@ class SPDataSet(db.Model):
     time_stamp = db.Column(db.String(100), nullable=False)
     loading_complete_time_stamp = db.Column(db.String(100), nullable=False)
     data_set_samples = db.relationship('DataSetSample', backref='dataset')
+
     def __str__(self):
         return self.name
     def __repr__(self):
@@ -101,7 +103,7 @@ class DataSetSample(db.Model):
         return f'<DataSetSample {self.name}>'
 
 def set_creation_time_stamp_default():
-    return str(datetime.now()).replace(' ', '_').replace(':', '-')
+    return str(datetime.utcnow()).split('.')[0].replace('-','').replace(' ','T').replace(':','')
 
 class Study(db.Model):
     __bind_key__ = 'symportal_database'
@@ -117,12 +119,18 @@ class Study(db.Model):
     data_url = db.Column(db.String(250), nullable=True)
     data_explorer = db.Column(db.Boolean, default=False)
     analysis = db.Column(db.Boolean, default=True)
+    data_analysis_id = db.Column(db.Integer, db.ForeignKey('dbApp_dataanalysis.id'), nullable=False)
     author_list_string = db.Column(db.String(500))
     additional_markers = db.Column(db.String(200))
     creation_time_stamp = db.Column(db.String(100), default=set_creation_time_stamp_default)
     data_set_samples = db.relationship('DataSetSample', secondary=Study__DataSetSample, lazy='dynamic',
      backref=db.backref('studies', lazy='dynamic'))
-    # num_samples = self.get_num_samples()
+    # # This will be either compilation or dataset_representative
+    # # A dataset_representative type study will be created for every DataSet object created
+    # # compilation type Study objects will be made when a study is associated with DataSetSamples that are
+    # # not exactly represented by a single DataSet object
+    # study_type = db.Column(db.String(50), default="dataset_representative")
+    submission = db.relationship("Submission", back_populates="study")
     
     def __str__(self):
         return self.name
@@ -142,6 +150,7 @@ class SPUser(UserMixin, db.Model):
     
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
+    has_upload_permission = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -151,6 +160,60 @@ class SPUser(UserMixin, db.Model):
 
     def __repr__(self):
         return f'<SPUser {self.name}>'
+
+
+class Submission(db.Model):
+    __bind_key__ = 'symportal_database'
+    __tablename__ = 'dbApp_submission'
+    id = db.Column(db.Integer, primary_key=True)
+    # This name will be used for the DataSet object and the Study object that will be associated to this object
+    name = db.Column(db.String(60), nullable=False, unique=True)
+    # The optional title that will be given to the Study object that is created
+    title = db.Column(db.String(250), nullable=True)
+    # The optional location to be transferred to the associated Study object
+    location = db.Column(db.String(50), nullable=True)
+    # The location of the directory holding the seq files and datasheet on the web hosting server, i.e. linode
+    web_local_dir_path = db.Column(db.String(300), nullable=False, unique=True)
+    # The location of the directory holding the seq files and datasheet on the symportal framework server, i.e. zygote
+    framework_local_dir_path = db.Column(db.String(300), nullable=False, unique=True)
+    # The progress of the submission
+    progress_status = db.Column(db.String(50), nullable=False, default='pending_submission')
+    # If an Error has occured
+    error_has_occured = db.Column(db.Boolean, default=False)
+    # associated DataSet
+    associated_dataset_id = db.Column(db.Integer, db.ForeignKey('dbApp_dataset.id'), nullable=True)
+    # associated Study
+    associated_study_id = db.Column(db.Integer, db.ForeignKey('dbApp_study.id'), nullable=True)
+    #https://docs.sqlalchemy.org/en/13/orm/tutorial.html#building-a-relationship
+    #NB it appears that sqlalchemy is smart enough to know that the associated_study_id
+    # attribute holds the id that allows the link of study to submission.
+    study = relationship("Study", back_populates="submission")
+    # submitting User
+    submitting_user_id = db.Column(db.Integer, db.ForeignKey('dbApp_user.id'), nullable=False)
+    # number of samples
+    number_samples = db.Column(db.Integer, nullable=False, default=0)
+    # These fields will hold the times that various checkpoints are reached
+    # submission time
+    submission_date_time  = db.Column(db.String(25), nullable=False, default=set_creation_time_stamp_default)
+    transfer_to_framework_server_date_time  = db.Column(db.String(25), nullable=True)
+    loading_started_date_time = db.Column(db.String(25), nullable=True)
+    loading_complete_date_time = db.Column(db.String(25), nullable=True)
+    analysis_started_date_time = db.Column(db.String(25), nullable=True)
+    analysis_complete_date_time = db.Column(db.String(25), nullable=True)
+    study_output_started_date_time = db.Column(db.String(25), nullable=True)
+    study_output_complete_date_time = db.Column(db.String(25), nullable=True)
+    transfer_to_web_server_date_time = db.Column(db.String(25), nullable=True)
+    # Whether this submission should be going into an analysis or not
+    # I.e. if it contains seawater samples or something similar then it should not be going into analysis
+    # conservatively set as False
+    for_analysis = db.Column(db.Boolean, nullable=False, default=False)
+
+    # The path to the directory in which the result files are output for:
+    # Framework server
+    framework_results_dir_path = db.Column(db.String(300), nullable=True)
+    # Web server
+    web_results_dir_path = db.Column(db.String(300), nullable=True)
+
 
 class DataAnalysis(db.Model):
     __bind_key__ = 'symportal_database'
@@ -169,6 +232,7 @@ class DataAnalysis(db.Model):
     submitting_user = db.Column(db.String(100), nullable=False)
     submitting_user_email = db.Column(db.String(100), nullable=False)
     analysis_complete_time_stamp = db.Column(db.String(100), nullable=False)
+    studies = db.relationship('Study', backref='data_analysis')
 
 class CladeCollection(db.Model):
     __bind_key__ = 'symportal_database'
