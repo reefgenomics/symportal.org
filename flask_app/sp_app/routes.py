@@ -63,9 +63,14 @@ def index():
             else:
                 allow_submission = False
         return render_template(
-            'index.html', published_studies=published_studies,
-            user_unpublished_studies=user_unpublished_studies, resource_info_dict=resource_info_dict,
-            user_pending_submissions=user_pending_submissions, allow_submission=allow_submission)
+            'index.html',
+            published_studies=published_studies,
+            user_unpublished_studies=user_unpublished_studies,
+            resource_info_dict=resource_info_dict,
+            user_pending_submissions=user_pending_submissions,
+            allow_submission=allow_submission,
+            email_address=os.getenv('CONTACT_EMAIL_ADDRESS')
+        )
 
 def get_spuser_by_name_from_orm_spuser_list(user_to_match):
     """ A sort of wrapper method that gets an ORM object that is the SPUser object from
@@ -158,7 +163,7 @@ def get_study_data(study_name, file_path):
 
 @app.route('/submit_data_learn_more')
 def submit_data_learn_more():
-    return render_template('submit_data_learn_more.html')
+    return render_template('submit_data_learn_more.html', email_address=os.getenv('CONTACT_EMAIL_ADDRESS'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -175,7 +180,7 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, email_address=os.getenv('CONTACT_EMAIL_ADDRESS'))
 
 @app.route('/logout')
 def logout():

@@ -13,6 +13,8 @@ POSTGRES_DB=''
 
 GOOGLE_MAPS_API_KEI=''
 
+CONTACT_EMAIL_ADDRESS='yulia.iakovleva@uni-konstanz.de'
+
 SYMPORTAL_DATABASE_CONTAINER=symportal-database
 SYMPORTAL_FLASK_CONTAINER=symportal-flask
 SYMPORTAL_NGINX_CONTAINER=symportal-nginx
