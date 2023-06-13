@@ -7,13 +7,13 @@
 To set up environment variables, create `.env` file and put neccesary credentials and variables:
 
 ```
-POSTGRES_USER=''
-POSTGRES_PASSWORD=''
-POSTGRES_DB=''
+CONTACT_EMAIL_ADDRESS='yulia.iakovleva@uni-konstanz.de'
 
 GOOGLE_MAPS_API_KEI=''
 
-CONTACT_EMAIL_ADDRESS='yulia.iakovleva@uni-konstanz.de'
+POSTGRES_USER=''
+POSTGRES_PASSWORD=''
+POSTGRES_DB=''
 
 SYMPORTAL_DATABASE_CONTAINER=symportal-database
 SYMPORTAL_FLASK_CONTAINER=symportal-flask
