@@ -16,6 +16,10 @@ RUN conda env update -n base -f environment.yml && \
     conda init && \
     eval "$(conda shell.bash hook)"
 
+# Install psql client
+RUN apt-get update && \
+    apt-get install -y postgresql-client
+
 # Generate a secret key
 RUN SECRET_KEY=$(base64 /dev/urandom | head -c50) && \
     sed -i "s|SECRET_KEY = ''|SECRET_KEY = '$SECRET_KEY'|g" settings.py
@@ -28,9 +32,5 @@ RUN sed -i "s/user_name = \"undefined\"/user_name = \"bcchume\"/g" sp_config.py 
 # Copy the rest of the application code
 COPY . .
 
-# Run migrations and populate the database
-#RUN python manage.py migrate && \
-#    python populate_db_ref_seqs.py
-
 # Run your application
-CMD tail -f /dev/null
+CMD ["bash"]
