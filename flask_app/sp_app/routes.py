@@ -168,6 +168,10 @@ def submit_data_learn_more():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+
+        # Log the user authentication info
+        app.logger.info(f'User {current_user.username} is authenticated')
+
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -179,6 +183,10 @@ def login():
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
+
+        # Log the user authentication info
+        app.logger.info(f'User {current_user.username} is validated')
+
         return redirect(next_page)
     return render_template('login.html', form=form, email_address=os.getenv('CONTACT_EMAIL_ADDRESS'))
 
