@@ -72,6 +72,8 @@ class TransferFrameworkToWeb:
         self.submission_to_transfer = None
         self.web_dest_dir = None
 
+        app.logger.debug(f'Initialize TransferFrameworkToWeb instance')
+
     def transfer_and_prep(self):
         for sub in self.submissions_to_transfer:
             self.submission_to_transfer = sub

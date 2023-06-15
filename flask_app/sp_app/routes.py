@@ -732,7 +732,7 @@ def _check_submission():
                                'upload your sequencing files.</strong><br>'
                                'Please try again.<br>'
                                'If the error persists, please get in contact at:<br>'
-                               '&#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;<br>'
+                               f"{os.getenv('CONTACT_EMAIL_ADDRESS')}<br>"
                                f'The full backend traceback is:<br><br>{tb}',
                     "error_type": "unhandled_error",
                     "response_type": "seq_file_upload",
