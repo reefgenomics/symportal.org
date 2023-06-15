@@ -3,8 +3,7 @@ import json
 import general
 from datetime import datetime
 import sp_config
-if sp_config.system_type == 'remote':
-    from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # python3 manage.py graph_models -a -g -o my_project.svg
 # You can visualise these models using the following commands in the terminal
