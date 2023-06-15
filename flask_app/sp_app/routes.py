@@ -169,8 +169,8 @@ def submit_data_learn_more():
 def login():
     if current_user.is_authenticated:
 
-        # Log the user authentication info
-        app.logger.info(f'User {current_user.username} is authenticated')
+        # Log the user authentication debug
+        app.logger.debug(f'User {current_user.name} is already authenticated')
 
         return redirect(url_for('index'))
     form = LoginForm()
@@ -185,7 +185,7 @@ def login():
             next_page = url_for('index')
 
         # Log the user authentication info
-        app.logger.info(f'User {current_user.username} is validated')
+        app.logger.info(f'User {current_user.name} is authenticated')
 
         return redirect(next_page)
     return render_template('login.html', form=form, email_address=os.getenv('CONTACT_EMAIL_ADDRESS'))

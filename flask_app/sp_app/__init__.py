@@ -29,10 +29,11 @@ login = LoginManager(app)
 login.login_view = 'login'
 
 # Configure logging
-handler = RotatingFileHandler('flask_app.log', maxBytes=100000, backupCount=5)
-handler.setLevel(logging.INFO)
+handler = RotatingFileHandler(app.config['LOG_FILE'], maxBytes=100000, backupCount=5)
+handler.setLevel(app.config['LOG_LEVEL'])
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 app.logger.addHandler(handler)
+app.logger.setLevel(app.config['LOG_LEVEL'])
 
 from sp_app import routes, models

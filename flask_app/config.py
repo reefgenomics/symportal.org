@@ -13,3 +13,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
                               'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Log file configuration
+    LOG_FILE = os.environ.get('LOG_FILE') or 'flask-app.log'
+    LOG_LEVEL = os.environ.get('LOG_LEVEL') or 'DEBUG'
