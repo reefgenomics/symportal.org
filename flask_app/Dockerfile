@@ -1,6 +1,9 @@
 # Base image
 FROM python:3.9
 
+# Install SSH client
+RUN apt-get update && apt-get install -y openssh-client
+
 # Set working directory
 WORKDIR /app
 

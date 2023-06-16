@@ -23,7 +23,11 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - SFTP_USERNAME=${SFTP_USERNAME}
+      - SFTP_PASSWORD=${SFTP_USERNAME}
+      - SFTP_HOME=${SFTP_HOME}
       - SYMPORTAL_DATABASE_CONTAINER=${SYMPORTAL_DATABASE_CONTAINER}
+      - SYMPORTAL_SFTP_SERVER_CONTAINER=${SYMPORTAL_SFTP_SERVER_CONTAINER}
     depends_on:
       - database
     container_name: ${SYMPORTAL_FLASK_CONTAINER}
@@ -49,9 +53,21 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - SFTP_USERNAME=${SFTP_USERNAME}
+      - SFTP_PASSWORD=${SFTP_USERNAME}
+      - SFTP_HOME=${SFTP_HOME}
       - SYMPORTAL_DATABASE_CONTAINER=${SYMPORTAL_DATABASE_CONTAINER}
+      - SYMPORTAL_SFTP_SERVER_CONTAINER=${SYMPORTAL_SFTP_SERVER_CONTAINER}
     command: >
       bash -c "./wait-for-db.sh && tail -f /dev/null"
     depends_on:
       - database
     container_name: ${SYMPORTAL_FRAMEWORK_CONTAINER}
+
+  sftp-server:
+    image: atmoz/sftp
+    ports:
+      - "2222:22"
+    environment:
+      - SFTP_USERS=${SFTP_USERNAME}:${SFTP_PASSWORD}:${SFTP_UID}:${SFTP_GID}:/${SFTP_HOME}
+    container_name: ${SYMPORTAL_SFTP_SERVER_CONTAINER}
