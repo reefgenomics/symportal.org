@@ -1,5 +1,5 @@
 # Base image
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:23.3.1-0
 
 # Install SSH client
 RUN apt-get update && apt-get install -y openssh-client cron
