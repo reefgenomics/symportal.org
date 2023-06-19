@@ -30,30 +30,27 @@ class SFTPClient:
         if self.client is None:
             raise Exception("Not connected to SFTP server.")
 
+        if not os.path.isdir(local_path):
+            raise Exception("Invalid local directory path.")
+
         sftp = self.client.open_sftp()
 
         # Extract the username and submission name from the local_path
         username = os.path.basename(os.path.dirname(local_path))
         submission_name = os.path.basename(local_path)
 
-        # Create the subfolders in the remote_path if they don't exist
-        remote_username_path = os.path.join(remote_path, username)
-        remote_submission_path = os.path.join(remote_username_path, submission_name)
-
-        # Create the subfolders on the remote server if they don't exist
+        # We assume the user folder can exist
         try:
-            sftp.chdir(os.path.join(remote_username_path))
+            sftp.chdir(f'{remote_path}/{username}')
         except IOError:
-            sftp.mkdir(remote_username_path)
+            sftp.mkdir(f'{remote_path}/{username}')
 
+        remote_submission_path = f'{remote_path}/{username}/{submission_name}'
         try:
-            sftp.chdir(remote_submission_path)
-        except IOError:
             sftp.mkdir(remote_submission_path)
-
-        for item in os.listdir(local_path):
-            # Copy file to remote
-            sftp.put(os.path.join(local_path, item), os.path.join(remote_path, item))
+            sftp.put(local_path, remote_submission_path, preserve_mtime=True)
+        finally:
+            sftp.close()
 
 
 def generate_lock_file(filepath):
@@ -117,7 +114,10 @@ if __name__ == '__main__':
     )
     try:
         # Connect to the SFTP server
+        print('TRYYYYYYYYYYYYYYYYYYYYYY')
         sftp_client.connect()
+        sftp = sftp_client.client.open_sftp()
+        sftp.getcwd()
         sftp_client.copy_submission(select_submission(submissions), os.getenv("SFTP_HOME"))
     finally:
         sftp_client.disconnect()
