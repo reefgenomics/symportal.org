@@ -69,5 +69,5 @@ services:
     ports:
       - "2222:22"
     environment:
-      - SFTP_USERS=${SFTP_USERNAME}:${SFTP_PASSWORD}:${SFTP_UID}:${SFTP_GID}:upload
+      - SFTP_USERS=${SFTP_USERNAME}:${SFTP_PASSWORD}:${SFTP_UID}:${SFTP_GID}:${SFTP_HOME}
     container_name: ${SYMPORTAL_SFTP_SERVER_CONTAINER}
