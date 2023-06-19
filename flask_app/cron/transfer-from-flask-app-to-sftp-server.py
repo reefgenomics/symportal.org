@@ -7,26 +7,29 @@ import logging
 import paramiko
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 
 class SFTPClient:
-    def __init__(self, hostname, username, password):
+    def __init__(self, hostname, username, password, local_path, remote_path):
         self.hostname = hostname
         self.username = username
         self.password = password
         self.client = None
+        self.local_path = local_path
+        self.remote_path = remote_path
 
     def connect(self):
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.client.connect(self.hostname, username=self.username, password=self.password)
+        self.client.connect(self.hostname, username=self.username,
+                            password=self.password)
 
     def disconnect(self):
         if self.client is not None:
             self.client.close()
 
-    def copy_submission(self, local_path, remote_path):
+    def copy_submission(self):
         if self.client is None:
             raise Exception("Not connected to SFTP server.")
 
@@ -36,19 +39,33 @@ class SFTPClient:
         sftp = self.client.open_sftp()
 
         # Extract the username and submission name from the local_path
-        username = os.path.basename(os.path.dirname(local_path))
-        submission_name = os.path.basename(local_path)
+        username = os.path.basename(os.path.dirname(self.local_path))
+        submission_name = os.path.basename(self.local_path)
+        remote_submission_path = f'{self.remote_path}/{username}/{submission_name}'
 
-        # We assume the user folder can exist
+        # We assume the user folder may exist
         try:
-            sftp.chdir(f'{remote_path}/{username}')
+            sftp.mkdir(f'{self.remote_path}/{username}')
+            logging.info(
+                f'Remote submission user folder created: {self.remote_path}/{username}.')
         except IOError:
-            sftp.mkdir(f'{remote_path}/{username}')
+            logging.error(
+                f'Remote submission path already exists: {self.remote_path}/{username}.')
 
-        remote_submission_path = f'{remote_path}/{username}/{submission_name}'
         try:
             sftp.mkdir(remote_submission_path)
-            sftp.put(local_path, remote_submission_path, preserve_mtime=True)
+            logging.info(
+                f'Remote submission path created: {remote_submission_path}.')
+        except IOError:
+            logging.error(
+                f'Remote submission path already exists: {remote_submission_path}.')
+
+        try:
+            for item in os.listdir(self.local_path):
+                # Copy file to remote
+                sftp.put(os.path.join(self.local_path, item),
+                         os.path.join(remote_submission_path, item))
+                logging.info(f'Done with {item}!')
         finally:
             sftp.close()
 
@@ -106,7 +123,8 @@ if __name__ == '__main__':
     submissions = get_submissions_to_transfer(base_dir='/app/sp_app/uploads')
     logging.info(f'Available submissions to transfer: {submissions}')
 
-    logging.info(f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_SFTP_SERVER_CONTAINER")}.')
+    logging.info(
+        f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_SFTP_SERVER_CONTAINER")}.')
     sftp_client = SFTPClient(
         os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
         os.getenv('SFTP_USERNAME'),
@@ -114,11 +132,9 @@ if __name__ == '__main__':
     )
     try:
         # Connect to the SFTP server
-        print('TRYYYYYYYYYYYYYYYYYYYYYY')
         sftp_client.connect()
-        sftp = sftp_client.client.open_sftp()
-        sftp.getcwd()
-        sftp_client.copy_submission(select_submission(submissions), os.getenv("SFTP_HOME"))
+        sftp_client.copy_submission(select_submission(submissions),
+                                    os.getenv("SFTP_HOME"))
     finally:
         sftp_client.disconnect()
         remove_lock_file(lock_file)
