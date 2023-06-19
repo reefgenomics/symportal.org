@@ -6,7 +6,10 @@ docker compose rm -fs
 echo "Building docker containers"
 docker compose up --build -d --remove-orphans
 
-# Pause eveyrthing exept the database service
+echo "Set up cron jobs"
+docker compose exec -T flask-app bash crontab /app/crontab
+
+# Pause everything except the database service
 docker compose pause nginx flask-app symportal-framework
 
 echo "Drop the database and restore from backup"
