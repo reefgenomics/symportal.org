@@ -154,7 +154,7 @@ def remove_lock_file(filepath):
     if os.path.isfile(filepath):
         os.remove(filepath)
         logging.info(
-            f'File the lock file {filepath} has been successfully removed.')
+            f'The lock file {filepath} has been successfully removed.')
     else:
         logging.info(f'File {filepath} does not exist.')
 
@@ -189,31 +189,39 @@ if __name__ == '__main__':
     # Only one cron job process can be running
     if lock_file_exists(lock_file):
         logging.info("Cron job process exists for the current script. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
-    # Generate the lock file to have only one cron running process
-    generate_lock_file(lock_file)
-    logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
-
-    logging.info(
-        f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_SFTP_SERVER_CONTAINER")}.')
-    sftp_client = SFTPClient(
-        hostname=os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
-        username=os.getenv('SFTP_USERNAME'),
-        password=os.getenv('SFTP_PASSWORD'),
-        local_path=select_submission(submissions),
-        remote_path=os.getenv("SFTP_HOME")
-    )
+    # Main try block that always finishes with deleting of lock file
     try:
+
+        # Generate the lock file to have only one cron running process
+        generate_lock_file(lock_file)
+        logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
+
         submissions = get_submissions_to_transfer(
             base_dir='/app/sp_app/uploads')
         logging.info(f'Available submissions to transfer: {submissions}')
-        # Connect to the SFTP server
-        sftp_client.connect()
-        sftp_client.copy_submission()
-        if sftp_client.md5sum_check():
-            sftp_client.update_submission_status()
-            sftp_client.delete_local_submission()
+
+        logging.info(
+            f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_SFTP_SERVER_CONTAINER")}.')
+        sftp_client = SFTPClient(
+            hostname=os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
+            username=os.getenv('SFTP_USERNAME'),
+            password=os.getenv('SFTP_PASSWORD'),
+            local_path=select_submission(submissions),
+            remote_path=os.getenv("SFTP_HOME")
+        )
+
+        try:
+            # Connect to the SFTP server
+            sftp_client.connect()
+            # Process submission
+            sftp_client.copy_submission()
+            if sftp_client.md5sum_check():
+                sftp_client.update_submission_status()
+                sftp_client.delete_local_submission()
+        finally:
+            sftp_client.disconnect()
+
     finally:
-        sftp_client.disconnect()
         remove_lock_file(lock_file)
