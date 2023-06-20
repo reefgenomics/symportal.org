@@ -133,6 +133,7 @@ class SFTPClient:
         db.session.commit()
 
     def delete_local_submission(self):
+        directory_path = f'{self.local_path}/{self.remote_path_username}/{self.submission_name}'
         try:
             shutil.rmtree(self.local_path)
             logging.info(
@@ -177,7 +178,7 @@ def get_submissions_to_transfer(base_dir):
 
 def select_submission(submissions):
     if len(submissions) == 0:
-        sys.exit()
+        sys.exit(1)
     return submissions[0]
 
 
@@ -194,9 +195,6 @@ if __name__ == '__main__':
     generate_lock_file(lock_file)
     logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
 
-    submissions = get_submissions_to_transfer(base_dir='/app/sp_app/uploads')
-    logging.info(f'Available submissions to transfer: {submissions}')
-
     logging.info(
         f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_SFTP_SERVER_CONTAINER")}.')
     sftp_client = SFTPClient(
@@ -207,6 +205,9 @@ if __name__ == '__main__':
         remote_path=os.getenv("SFTP_HOME")
     )
     try:
+        submissions = get_submissions_to_transfer(
+            base_dir='/app/sp_app/uploads')
+        logging.info(f'Available submissions to transfer: {submissions}')
         # Connect to the SFTP server
         sftp_client.connect()
         sftp_client.copy_submission()
