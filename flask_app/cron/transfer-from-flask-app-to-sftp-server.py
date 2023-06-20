@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 import os
 import sys
-import time
 import glob
+import shutil
 import hashlib
 import logging
 import paramiko
 
+from sp_app import db
+from sp_app.models import Submission
+
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class SFTPClient:
@@ -20,8 +24,11 @@ class SFTPClient:
         self.local_path = local_path
         self.remote_path = remote_path
         # Extract the username and submission name from the local_path
-        self.remote_path_username = os.path.basename(os.path.dirname(self.local_path))
-        self.remote_path_submission_path = f'{self.remote_path}/{self.remote_path_username}/{os.path.basename(self.local_path)}'
+        self.remote_path_username = os.path.basename(
+            os.path.dirname(self.local_path))
+        self.submission_name = os.path.basename(self.local_path)
+        self.remote_path_submission_path = \
+            f'{self.remote_path}/{self.remote_path_username}/{self.submission_name}'
 
     def connect(self):
         self.client = paramiko.SSHClient()
@@ -38,7 +45,8 @@ class SFTPClient:
             raise Exception("Not connected to SFTP server.")
 
         if not os.path.isdir(self.local_path):
-            raise Exception(f'Invalid local directory path : {self.local_path}.')
+            raise Exception(
+                f'Invalid local directory path : {self.local_path}.')
 
         sftp = self.client.open_sftp()
 
@@ -75,7 +83,7 @@ class SFTPClient:
             file_paths = glob.glob(os.path.join(self.local_path, '*.md5sum'))
             if len(file_paths) == 0:
                 raise FileNotFoundError(
-                    f'No md5sum files found in the specified folder: {self.local_path}')
+                    f'No md5sum files found in the specified folder: {self.local_path}.')
 
             # Assuming there is only one md5sum file in the folder
             file_path = file_paths[0]
@@ -86,7 +94,7 @@ class SFTPClient:
         except FileNotFoundError as e:
             logging.error(e)
         except Exception as e:
-            print(f"An error occurred while processing the file: {e}")
+            print(f'An error occurred while processing the file: {e}.')
 
         return md5sum_dict
 
@@ -97,7 +105,8 @@ class SFTPClient:
         sftp = self.client.open_sftp()
 
         for filename, existing_checksum in md5sum_dict.items():
-            remote_file_path = os.path.join(self.remote_path_submission_path, filename)
+            remote_file_path = os.path.join(self.remote_path_submission_path,
+                                            filename)
             # Calculate the MD5 checksum of the remote file
             md5_hash = hashlib.md5()
             with sftp.open(remote_file_path, 'rb') as remote_file:
@@ -107,12 +116,32 @@ class SFTPClient:
             remote_checksum = md5_hash.hexdigest()
             # Compare the remote checksum with the existing checksum
             if remote_checksum == existing_checksum:
-                logging.info(f'The MD5 checksum of {filename} matches the existing checksum.')
+                logging.info(
+                    f'The MD5 checksum of {filename} matches the existing checksum.')
             else:
-                error_message = f'The MD5 checksum of {filename} does not match the existing checksum.'
+                error_message = \
+                    f'The MD5 checksum of {filename} does not match the existing checksum.'
                 logging.error(error_message)
                 raise Exception(error_message)
-        logging.info('THE MD5 checksum completed.')
+        logging.info('The MD5 checksum completed.')
+        return True
+
+    def update_submission_status(self):
+        s = Submission.query.filter(
+            Submission.name == self.submission_name).one()
+        s.progress_status = 'transfer_to_sftp_server_complete'
+        db.session.commit()
+
+    def delete_local_submission(self):
+        try:
+            shutil.rmtree(self.local_path)
+            logging.info(
+                f'Directory {self.local_path} and its contents were successfully removed.')
+        except FileNotFoundError:
+            logging.warning(f'Directory {self.local_path} does not exist.')
+        except Exception as e:
+            logging.error(
+                f'An error occurred while removing directory {self.local_path}: {e}')
 
 
 def generate_lock_file(filepath):
@@ -181,7 +210,9 @@ if __name__ == '__main__':
         # Connect to the SFTP server
         sftp_client.connect()
         sftp_client.copy_submission()
-        sftp_client.md5sum_check()
+        if sftp_client.md5sum_check():
+            sftp_client.update_submission_status()
+            sftp_client.delete_local_submission()
     finally:
         sftp_client.disconnect()
         remove_lock_file(lock_file)

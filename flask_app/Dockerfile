@@ -19,6 +19,7 @@ COPY . .
 # Set environment variables
 ENV FLASK_APP=sp_app:app
 ENV FLASK_RUN_HOST=0.0.0.0
+ENV PYTHONPATH=/app
 
 # Expose the Flask app port
 EXPOSE 5000
