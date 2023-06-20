@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import glob
+import hashlib
 import logging
 import paramiko
 
@@ -18,6 +19,9 @@ class SFTPClient:
         self.client = None
         self.local_path = local_path
         self.remote_path = remote_path
+        # Extract the username and submission name from the local_path
+        self.remote_path_username = os.path.basename(os.path.dirname(self.local_path))
+        self.remote_path_submission_path = f'{self.remote_path}/{self.remote_path_username}/{os.path.basename(self.local_path)}'
 
     def connect(self):
         self.client = paramiko.SSHClient()
@@ -33,41 +37,82 @@ class SFTPClient:
         if self.client is None:
             raise Exception("Not connected to SFTP server.")
 
-        if not os.path.isdir(local_path):
-            raise Exception("Invalid local directory path.")
+        if not os.path.isdir(self.local_path):
+            raise Exception(f'Invalid local directory path : {self.local_path}.')
 
         sftp = self.client.open_sftp()
 
-        # Extract the username and submission name from the local_path
-        username = os.path.basename(os.path.dirname(self.local_path))
-        submission_name = os.path.basename(self.local_path)
-        remote_submission_path = f'{self.remote_path}/{username}/{submission_name}'
-
         # We assume the user folder may exist
         try:
-            sftp.mkdir(f'{self.remote_path}/{username}')
+            sftp.mkdir(f'{self.remote_path}/{self.remote_path_username}')
             logging.info(
-                f'Remote submission user folder created: {self.remote_path}/{username}.')
+                f'Remote submission user folder created: {self.remote_path}/{self.remote_path_username}.')
         except IOError:
             logging.error(
-                f'Remote submission path already exists: {self.remote_path}/{username}.')
+                f'Remote submission path already exists: {self.remote_path}/{self.remote_path_username}.')
 
         try:
-            sftp.mkdir(remote_submission_path)
+            sftp.mkdir(self.remote_path_submission_path)
             logging.info(
-                f'Remote submission path created: {remote_submission_path}.')
+                f'Remote submission path created: {self.remote_path_submission_path}.')
         except IOError:
             logging.error(
-                f'Remote submission path already exists: {remote_submission_path}.')
+                f'Remote submission path already exists: {self.remote_path_submission_path}.')
 
         try:
             for item in os.listdir(self.local_path):
                 # Copy file to remote
                 sftp.put(os.path.join(self.local_path, item),
-                         os.path.join(remote_submission_path, item))
+                         os.path.join(self.remote_path_submission_path, item))
                 logging.info(f'Done with {item}!')
         finally:
             sftp.close()
+
+    def _create_md5sum_dictionary(self):
+        md5sum_dict = {}
+
+        try:
+            file_paths = glob.glob(os.path.join(self.local_path, '*.md5sum'))
+            if len(file_paths) == 0:
+                raise FileNotFoundError(
+                    f'No md5sum files found in the specified folder: {self.local_path}')
+
+            # Assuming there is only one md5sum file in the folder
+            file_path = file_paths[0]
+
+            with open(file_path, 'r') as file:
+                md5sum_dict = {os.path.basename(line.strip().split('  ')[1]):
+                                   line.strip().split('  ')[0] for line in file}
+        except FileNotFoundError as e:
+            logging.error(e)
+        except Exception as e:
+            print(f"An error occurred while processing the file: {e}")
+
+        return md5sum_dict
+
+    def md5sum_check(self):
+
+        md5sum_dict = self._create_md5sum_dictionary()
+
+        sftp = self.client.open_sftp()
+
+        for filename, existing_checksum in md5sum_dict.items():
+            remote_file_path = os.path.join(self.remote_path_submission_path, filename)
+            # Calculate the MD5 checksum of the remote file
+            md5_hash = hashlib.md5()
+            with sftp.open(remote_file_path, 'rb') as remote_file:
+                for chunk in iter(lambda: remote_file.read(4096), b''):
+                    md5_hash.update(chunk)
+
+            remote_checksum = md5_hash.hexdigest()
+            # Compare the remote checksum with the existing checksum
+            if remote_checksum == existing_checksum:
+                logging.info(f'The MD5 checksum of {filename} matches the existing checksum.')
+            else:
+                error_message = f'The MD5 checksum of {filename} does not match the existing checksum.'
+                logging.error(error_message)
+                raise Exception(error_message)
+        logging.info('THE MD5 checksum completed.')
 
 
 def generate_lock_file(filepath):
@@ -109,7 +154,7 @@ def select_submission(submissions):
 
 if __name__ == '__main__':
 
-    lock_file = f'/var/lock/{os.path.basename(__file__)}'
+    lock_file = f'/var/lock/{os.path.basename(__file__)}.lock'
 
     # Only one cron job process can be running
     if lock_file_exists(lock_file):
@@ -126,15 +171,17 @@ if __name__ == '__main__':
     logging.info(
         f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_SFTP_SERVER_CONTAINER")}.')
     sftp_client = SFTPClient(
-        os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
-        os.getenv('SFTP_USERNAME'),
-        os.getenv('SFTP_PASSWORD')
+        hostname=os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
+        username=os.getenv('SFTP_USERNAME'),
+        password=os.getenv('SFTP_PASSWORD'),
+        local_path=select_submission(submissions),
+        remote_path=os.getenv("SFTP_HOME")
     )
     try:
         # Connect to the SFTP server
         sftp_client.connect()
-        sftp_client.copy_submission(select_submission(submissions),
-                                    os.getenv("SFTP_HOME"))
+        sftp_client.copy_submission()
+        sftp_client.md5sum_check()
     finally:
         sftp_client.disconnect()
         remove_lock_file(lock_file)
