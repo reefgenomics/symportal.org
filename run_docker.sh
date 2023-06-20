@@ -7,7 +7,7 @@ echo "Building docker containers"
 docker compose up --build -d --remove-orphans
 
 echo "Set up cron jobs"
-docker compose exec flask-app bash -c "service cron start && crontab /app/cron/crontab"
+docker compose exec flask-app bash -c "env >> /etc/environment && service cron start && crontab /app/cron/crontab"
 
 # Pause everything except the database service
 docker compose pause nginx flask-app symportal-framework
