@@ -178,7 +178,9 @@ def get_submissions_to_transfer(base_dir):
 
 def select_submission(submissions):
     if len(submissions) == 0:
-        sys.exit(1)
+        error_message = 'The is not available submissions.'
+        logging.error(error_message)
+        raise ValueError(error_message)
     return submissions[0]
 
 
