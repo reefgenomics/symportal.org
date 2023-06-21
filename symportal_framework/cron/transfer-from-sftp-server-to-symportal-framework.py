@@ -1,11 +1,15 @@
 import os
 import sys
 import glob
+import django
 import shutil
 import hashlib
 import logging
 import paramiko
 
+# Initialize Django
+django.setup()
+# Import from installed Apps
 from dbApp.models import Submission
 
 # Configure logging
@@ -52,15 +56,14 @@ class SFTPClient:
             logging.info(
                 f'Local submission path created: {self.local_path}.')
 
+        sftp.chdir(self.remote_path)
+
         try:
             # Iterate over the files and folders in the remote directory
-            for item in sftp.listdir_attr():
-                item_name = item.filename
-                item_path = os.path.join(self.remote_path, item_name)
-                local_item_path = os.path.join(self.local_path, item_name)
-
+            for item in sftp.listdir():
+                local_item_path = os.path.join(self.local_path, item)
                 # Copy the file to the local directory
-                sftp.get(item_path, local_item_path)
+                sftp.get(item, local_item_path)
                 logging.info(f'Done with {item}.')
         finally:
             sftp.close()
@@ -90,33 +93,30 @@ class SFTPClient:
 
 
     def md5sum_check(self):
-
         md5sum_dict = self._create_md5sum_dictionary()
 
-        sftp = self.client.open_sftp()
-
         for filename, existing_checksum in md5sum_dict.items():
-            local_file_path = os.path.join(self.local_path,
-                                            filename)
-            # Calculate the MD5 checksum of the remote file
+            local_file_path = os.path.join(self.local_path, filename)
+
+            # Calculate the MD5 checksum of the local file
             md5_hash = hashlib.md5()
-            with sftp.open(local_file_path, 'rb') as remote_file:
-                for chunk in iter(lambda: remote_file.read(4096), b''):
+            with open(local_file_path, 'rb') as local_file:
+                for chunk in iter(lambda: local_file.read(4096), b''):
                     md5_hash.update(chunk)
 
             local_checksum = md5_hash.hexdigest()
-            # Compare the remote checksum with the existing checksum
+
+            # Compare the local checksum with the existing checksum
             if local_checksum == existing_checksum:
                 logging.info(
                     f'The MD5 checksum of {filename} matches the existing checksum.')
             else:
-                error_message = \
-                    f'The MD5 checksum of {filename} does not match the existing checksum.'
+                error_message = f'The MD5 checksum of {filename} does not match the existing checksum.'
                 logging.error(error_message)
                 raise Exception(error_message)
+
         logging.info('The MD5 checksum completed.')
         return True
-
 
     def update_submission_status(self):
         self.submission.progress_status = 'transfer_to_framework_server_complete'
@@ -124,11 +124,15 @@ class SFTPClient:
         logging.info(
             f'The submission status has been updated to {self.submission.progress_status}.')
 
-
     def delete_remote_submission(self):
         sftp = self.client.open_sftp()
         try:
-            sftp.rmtree(self.remote_path)
+            for root, dirs, files in sftp.walk(self.remote_path):
+                for file in files:
+                    sftp.remove(os.path.join(root, file))
+                for dir in dirs:
+                    sftp.rmdir(os.path.join(root, dir))
+            sftp.rmdir(self.remote_path)
             logging.info(
                 f'Directory {self.remote_path} and its contents were successfully removed.')
         except FileNotFoundError:
@@ -209,7 +213,6 @@ if __name__ == '__main__':
             sftp_client.copy_submission()
             if sftp_client.md5sum_check():
                 sftp_client.update_submission_status()
-                sftp_client.delete_remote_submission()
                 sftp_client.delete_remote_submission()
         finally:
             sftp_client.disconnect()
