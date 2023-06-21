@@ -36,6 +36,7 @@ COPY . .
 
 # Set environment variables
 ENV PYTHONPATH=/app
+ENV DJANGO_SETTINGS_MODULE=settings
 
 # Run your application
 CMD ["bash"]
