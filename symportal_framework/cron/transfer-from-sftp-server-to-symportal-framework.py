@@ -170,9 +170,8 @@ def get_submissions_to_transfer():
 
 def select_submission(submissions):
     if len(submissions) == 0:
-        error_message = 'There are no available submissions.'
-        logging.error(error_message)
-        raise ValueError(error_message)
+        logging.warning('There are no available submissions.')
+        sys.exit(1)
     return submissions[0]
 
 
