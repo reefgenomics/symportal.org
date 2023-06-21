@@ -127,14 +127,12 @@ class SFTPClient:
     def delete_remote_submission(self):
         sftp = self.client.open_sftp()
         try:
-            for root, dirs, files in sftp.walk(self.remote_path):
-                for file in files:
-                    sftp.remove(os.path.join(root, file))
-                for dir in dirs:
-                    sftp.rmdir(os.path.join(root, dir))
+            for file in sftp.listdir(self.remote_path):
+                sftp.remove(os.path.join(self.remote_path, file))
             sftp.rmdir(self.remote_path)
             logging.info(
-                f'Directory {self.remote_path} and its contents were successfully removed.')
+                f'Directory {self.remote_path} and its contents were '
+                f'successfully removed.')
         except FileNotFoundError:
             logging.warning(f'Directory {self.remote_path} does not exist.')
         except Exception as e:
@@ -203,8 +201,7 @@ if __name__ == '__main__':
             hostname=os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
             username=os.getenv('SFTP_USERNAME'),
             password=os.getenv('SFTP_PASSWORD'),
-            submission=submission
-        )
+            submission=submission)
 
         try:
             # Connect to the SFTP server
@@ -212,8 +209,8 @@ if __name__ == '__main__':
             # Process submission
             sftp_client.copy_submission()
             if sftp_client.md5sum_check():
-                sftp_client.update_submission_status()
                 sftp_client.delete_remote_submission()
+                sftp_client.update_submission_status()
         finally:
             sftp_client.disconnect()
 

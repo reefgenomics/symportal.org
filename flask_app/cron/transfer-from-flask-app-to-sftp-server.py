@@ -212,8 +212,7 @@ if __name__ == '__main__':
             username=os.getenv('SFTP_USERNAME'),
             password=os.getenv('SFTP_PASSWORD'),
             local_path=select_submission(submissions),
-            remote_path=os.getenv("SFTP_HOME")
-        )
+            remote_path=os.getenv("SFTP_HOME"))
 
         try:
             # Connect to the SFTP server
