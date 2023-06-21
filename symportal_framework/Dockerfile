@@ -31,9 +31,11 @@ RUN SECRET_KEY=$(base64 /dev/urandom | head -c50) && \
 RUN sed -i "s/user_name = \"undefined\"/user_name = \"bcchume\"/g" sp_config.py && \
     sed -i "s/user_email = \"undefined\"/user_email = \"bcchume@symportal.org\"/g" sp_config.py
 
-
 # Copy the rest of the application code
 COPY . .
+
+# Set environment variables
+ENV PYTHONPATH=/app
 
 # Run your application
 CMD ["bash"]

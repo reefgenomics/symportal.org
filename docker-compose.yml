@@ -62,6 +62,8 @@ services:
       bash -c "./wait-for-db.sh && tail -f /dev/null"
     depends_on:
       - database
+    volumes:
+      - /mnt:/mnt
     container_name: ${SYMPORTAL_FRAMEWORK_CONTAINER}
 
   sftp-server:
