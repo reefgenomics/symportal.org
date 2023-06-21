@@ -21,4 +21,4 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-*/1 * * * * /usr/local/bin/python /app/cron/transfer-from-flask-app-to-sftp-server.py >> /var/log/transfer-from-flask-app-to-sftp-server.log 2>&1
+*/1 * * * * /usr/local/bin/python /app/cron/transfer-from-sftp-server-to-symportal-framework.py >> /var/log/transfer-from-sftp-server-to-symportal-framework.py 2>&1
