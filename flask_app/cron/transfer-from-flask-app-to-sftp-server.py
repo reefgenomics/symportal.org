@@ -134,7 +134,6 @@ class SFTPClient:
         logging.info(
             f'The submission status has been updated to {s.progress_status}.')
 
-
     def delete_local_submission(self):
         try:
             shutil.rmtree(self.local_path)

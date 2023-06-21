@@ -43,7 +43,6 @@ class SFTPClient:
         if self.client is not None:
             self.client.close()
 
-
     def copy_submission(self):
         if self.client is None:
             raise Exception("Not connected to SFTP server.")
@@ -68,7 +67,6 @@ class SFTPClient:
         finally:
             sftp.close()
 
-
     def _create_md5sum_dictionary(self):
         md5sum_dict = {}
 
@@ -90,7 +88,6 @@ class SFTPClient:
             print(f'An error occurred while processing the file: {e}.')
 
         return md5sum_dict
-
 
     def md5sum_check(self):
         md5sum_dict = self._create_md5sum_dictionary()
