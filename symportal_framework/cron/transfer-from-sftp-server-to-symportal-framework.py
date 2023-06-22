@@ -117,6 +117,7 @@ class SFTPClient:
 
     def update_submission_status(self):
         self.submission.progress_status = 'transfer_to_framework_server_complete'
+        self.framework_local_dir_path = self.local_path
         self.submission.save()
         logging.info(
             f'The submission status has been updated to {self.submission.progress_status}.')

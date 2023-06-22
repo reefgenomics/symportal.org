@@ -16,8 +16,10 @@ logging.basicConfig(
 
 
 class DataLoader:
-    def __int__(self, args):
+    def __init__(self, args):
+        logging.info('Initializing SymPortal Workflow Manager...')
         self.workflow_manager = main.SymPortalWorkFlowManager(args)
+        logging.info('Initializing of Symportal Workflow Manager has been completed.')
 
     def update_submission(self, submission):
         # Assign the associated DataSet and Study objects
@@ -60,13 +62,13 @@ def lock_file_exists(filepath):
 
 
 def check_incomplete_submissions():
-    in_progress = Submission.objects.filter(
-        progress_status='transfer_to_framework_server_complete',
-        loading_started_date_time=None)
+    in_progress = Submission.objects\
+        .filter(progress_status="transfer_to_framework_server_complete")\
+        .exclude(loading_started_date_time=None)
     if in_progress:
         logging.warning(
             'Incomplete loading detected:\n' + '\n'.join(
-                [f'Submission ID: {s.id}: {s.name}' for s in in_progress]))
+                [f'    Submission ID: {s.id}: {s.name}' for s in in_progress]))
         sys.exit(1)
 
 
@@ -85,26 +87,28 @@ def get_datasheet_path(submission, valid_extensions=['.xlsx', '.csv']):
 
 def define_custom_args(submission, datasheet_path, num_proc):
     custom_args = [
-        '--load', submission.name,
+        '--load', submission.framework_local_dir_path,
         '--data_sheet', datasheet_path, '--num_proc', str(num_proc),
         '--name', submission.name, '--is_cron_loading',
         '--study_user_string', submission.submitting_user.name,
         '--study_name', submission.name
     ]
     if submission.for_analysis:
-        custom_args.append('--no_output')
+        custom_args.insert(6, '--no_output')
     return custom_args
 
 
 def load_submission(submission):
     datasheet_path = get_datasheet_path(submission)
-    args = define_custom_args(
-        submission=submission,
-        datasheet_path=datasheet_path,
-        num_proc=min(30, submission.number_samples))
-    data_loader = DataLoader(args)
+    data_loader = DataLoader(
+        args=define_custom_args(
+            submission=submission,
+            datasheet_path=datasheet_path,
+            num_proc=min(30, submission.number_samples))
+    )
     try:
-        data_loader.work_flow_manager.start_work_flow()
+        logging.info('Starting the workflow.')
+        data_loader.workflow_manager.start_work_flow()
         submission.loading_started_date_time = data_loader.workflow_manager.date_time_str
         data_loader.update_submission(submission)
         logging.info(
