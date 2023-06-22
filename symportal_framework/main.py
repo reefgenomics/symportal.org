@@ -68,7 +68,7 @@ class SymPortalWorkFlowManager:
         self.symportal_root_directory = os.path.abspath(os.path.dirname(__file__))
         self.dbbackup_dir = os.path.join(self.symportal_root_directory, 'dbBackUp')
         os.makedirs(self.dbbackup_dir, exist_ok=True)
-        self.date_time_str = str(datetime.utcnow()).split('.')[0].replace('-','').replace(' ','T').replace(':','')
+        self.date_time_str = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
         self.submitting_user = sp_config.user_name
         self.submitting_user_email = sp_config.user_email
         self.number_of_samples = None

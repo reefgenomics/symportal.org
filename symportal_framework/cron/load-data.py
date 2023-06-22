@@ -63,7 +63,7 @@ def lock_file_exists(filepath):
 
 def check_incomplete_submissions():
     in_progress = Submission.objects\
-        .filter(progress_status="transfer_to_framework_server_complete")\
+        .filter(progress_status='transfer_to_framework_server_complete')\
         .exclude(loading_started_date_time=None)
     if in_progress:
         logging.warning(
