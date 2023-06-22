@@ -21,4 +21,5 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-*/1 * * * * /opt/conda/bin/python /app/cron/transfer-from-sftp-server-to-symportal-framework.py >> /var/log/transfer-from-sftp-server-to-symportal-framework.py 2>&1
+*/1 * * * * /opt/conda/bin/python /app/cron/transfer-from-sftp-server-to-symportal-framework.py >> /var/log/transfer-from-sftp-server-to-symportal-framework.py.log 2>&1
+*/1 * * * * /opt/conda/bin/python /app/cron/load-data.py >> /var/log/load-data.py.log 2>&1

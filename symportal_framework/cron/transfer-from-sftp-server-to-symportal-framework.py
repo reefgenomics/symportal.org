@@ -188,8 +188,7 @@ if __name__ == '__main__':
         logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
 
         submission = select_submission(
-            get_submissions_to_transfer()
-        )
+            get_submissions_to_transfer())
 
         logging.info(
             f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_DATABASE_CONTAINER")}.')
