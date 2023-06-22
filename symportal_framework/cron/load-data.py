@@ -66,9 +66,8 @@ def check_incomplete_submissions():
     if in_progress:
         logging.warning(
             'Incomplete loading detected:\n' + '\n'.join(
-                [f'{s.id}: {s.name}' for s in in_progress]))
+                [f'Submission ID: {s.id}: {s.name}' for s in in_progress]))
         sys.exit(1)
-    logging.info('No incomplete loading detected.')
 
 
 def get_datasheet_path(submission, valid_extensions=['.xlsx', '.csv']):
