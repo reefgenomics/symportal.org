@@ -22,4 +22,7 @@
 #
 # m h  dom mon dow   command
 */1 * * * * /opt/conda/bin/python /app/cron/transfer-from-sftp-server-to-symportal-framework.py >> /var/log/transfer-from-sftp-server-to-symportal-framework.log 2>&1
-*/1 * * * * /opt/conda/bin/python /app/cron/load-data.py >> /var/log/load-data.log 2>&1
+*/1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh \
+                     && conda activate base \
+                     && python /app/cron/load-data.py' \
+                     >> /var/log/load-data.log 2>&1

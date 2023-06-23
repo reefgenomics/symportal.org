@@ -1345,9 +1345,9 @@ class DataLoading:
         self.sample_meta_info_df.drop(index=rows_to_drop, inplace=True)
 
         if file_not_found_list:
-            print('Some of the sequencing files listed in your datasheet cannot be found:')
-            for file_name in file_not_found_list:
-                print(f'{file_name}')
+            logging.warning(
+                'Some of the sequencing files listed in your datasheet cannot be found:\n' + '\n'.join(
+                    [f'    {f}' for f in file_not_found_list]))
             sys.exit()
 
     def _check_datasheet_df_vals_unique(self):
