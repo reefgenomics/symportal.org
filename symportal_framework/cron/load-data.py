@@ -144,14 +144,14 @@ if __name__ == '__main__':
 
     # Only one cron job process can be running
     if lock_file_exists(lock_file):
-        logging.info('Cron job process exists for the current script. Exiting.')
+        logging.debug('Cron job process exists for the current script. Exiting.')
         sys.exit(1)
 
     # Main try block that always finishes with deleting of lock file
     try:
         # Generate the lock file to have only one cron running process
         generate_lock_file(lock_file)
-        logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
+        logging.debug(f'Lock file generated. Current process ID: {os.getpid()}')
         check_incomplete_submissions()
         submissions = get_submissions_to_load()
         for s in submissions:
