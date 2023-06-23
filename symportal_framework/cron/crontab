@@ -26,3 +26,7 @@
                      && conda activate base \
                      && python /app/cron/load-data.py' \
                      >> /var/log/load-data.log 2>&1
+*/1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh \
+                     && conda activate base \
+                     && python /app/cron_jobs/2_cron_analysis.py' \
+                     >> /var/log/run-analysis.log 2>&1
