@@ -2177,9 +2177,7 @@ class InitialMothurWorker:
                 )
                 raise RuntimeError({'sample_name': self.sample_name})
         for stdout_line in self.thread_safe_general.decode_utf8_binary_to_list(
-                self.mothur_analysis_object.latest_completed_proces
-        s_command.stdout
-        ):
+                self.mothur_analysis_object.latest_completed_process_command.stdout):
             if '[WARNING]: Blank fasta name, ignoring read.' in stdout_line:
                 self.log_qc_error_and_continue(errorreason=f'Blank fasta name during {stage_of_qc}')
                 raise RuntimeError({'sample_name': self.sample_name})
