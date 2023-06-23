@@ -1315,6 +1315,8 @@ class DataLoading:
                 elif os.path.exists(fwd_file_path + '.fastq.gz'):
                     self.sample_meta_info_df.at[df_ind, 'fastq_fwd_file_name'] = fwd_file_path + '.fastq.gz'
                     fwd_file_path = self.sample_meta_info_df.at[df_ind, 'fastq_fwd_file_name']
+                elif os.path.exists(os.path.join('/mnt', fwd_file_path)):
+                    fwd_file_path = os.path.join('/mnt', fwd_file_path
                 else:
                     file_not_found_list.append(fwd_file_path)
             # Check for rev read
@@ -1328,6 +1330,8 @@ class DataLoading:
                 elif os.path.exists(rev_file_path + '.fastq.gz'):
                     self.sample_meta_info_df.at[df_ind, 'fastq_rev_file_name'] = rev_file_path + '.fastq.gz'
                     rev_file_path = self.sample_meta_info_df.at[df_ind, 'fastq_rev_file_name']
+                elif os.path.exists(os.path.join('/mnt', rev_file_path)):
+                    rev_file_path = os.path.join('/mnt', rev_file_path
                 else:
                     file_not_found_list.append(rev_file_path)
             # NB if we were unable to find either the fwd or rev read then we will not be able
