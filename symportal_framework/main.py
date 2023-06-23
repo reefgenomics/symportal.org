@@ -24,6 +24,7 @@ __version__ = '0.3.22'
 
 # Django specific settings
 import os
+import logging
 from datetime import datetime
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.conf import settings
@@ -326,6 +327,7 @@ class SymPortalWorkFlowManager:
 
     def start_work_flow(self):
         if self.args.load:
+
             self.perform_data_loading()
         elif self.args.analyse:
             self._perform_data_analysis()

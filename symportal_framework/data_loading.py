@@ -247,6 +247,7 @@ class DataLoading:
         for line in self.thread_safe_general.decode_utf8_binary_to_list(mothur_version_cmd.stdout):
             if "1.43" in line:
                 return
+        logging.error('Installed mothur version is not equal to 1.43.')
         raise RuntimeError('SymPortal currently uses version 1.43 of mothur.\nCheck your version.')
 
     def _make_new_dataset_object(self):
@@ -2176,7 +2177,8 @@ class InitialMothurWorker:
                 )
                 raise RuntimeError({'sample_name': self.sample_name})
         for stdout_line in self.thread_safe_general.decode_utf8_binary_to_list(
-                self.mothur_analysis_object.latest_completed_process_command.stdout
+                self.mothur_analysis_object.latest_completed_proces
+        s_command.stdout
         ):
             if '[WARNING]: Blank fasta name, ignoring read.' in stdout_line:
                 self.log_qc_error_and_continue(errorreason=f'Blank fasta name during {stage_of_qc}')
