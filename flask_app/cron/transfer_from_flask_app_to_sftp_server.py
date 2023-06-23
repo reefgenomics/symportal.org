@@ -148,6 +148,7 @@ class SFTPClient:
 
 def generate_lock_file(filepath):
     with open(filepath, 'w') as file:
+        logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
         return
 
 
@@ -162,6 +163,7 @@ def remove_lock_file(filepath):
 
 def lock_file_exists(filepath):
     if os.path.exists(filepath):
+        logging.info("Cron job process exists for the current script. Exiting.")
         return True
     else:
         return False
@@ -190,14 +192,12 @@ if __name__ == '__main__':
 
     # Only one cron job process can be running
     if lock_file_exists(lock_file):
-        logging.info("Cron job process exists for the current script. Exiting.")
         sys.exit(1)
 
     # Main try block that always finishes with deleting of lock file
     try:
         # Generate the lock file to have only one cron running process
         generate_lock_file(lock_file)
-        logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
 
         submissions = get_submissions_to_transfer(
             base_dir='/app/sp_app/uploads')

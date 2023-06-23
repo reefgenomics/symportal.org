@@ -21,12 +21,6 @@
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-*/1 * * * * /opt/conda/bin/python /app/cron/transfer-from-sftp-server-to-symportal-framework.py >> /var/log/transfer-from-sftp-server-to-symportal-framework.log 2>&1
-*/1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh \
-                     && conda activate base \
-                     && python /app/cron/load-data.py' \
-                     >> /var/log/load-data.log 2>&1
-*/1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh \
-                     && conda activate base \
-                     && python /app/cron_jobs/2_cron_analysis.py' \
-                     >> /var/log/run-analysis.log 2>&1
+*/1 * * * * /opt/conda/bin/python /app/cron/transfer_from_sftp_server_to_symportal_framework.py >> /var/log/transfer_from_sftp_server_to_symportal_framework.log 2>&1
+*/1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh && conda activate base && python /app/cron/load_data.py' >> /var/log/load_data.log 2>&1
+*/1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh && conda activate base && python /app/cron/run_analysis.py' >> /var/log/run_analysis.log 2>&1

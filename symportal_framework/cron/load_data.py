@@ -19,7 +19,8 @@ class DataLoader:
     def __init__(self, args):
         logging.info('Initializing SymPortal Workflow Manager...')
         self.workflow_manager = main.SymPortalWorkFlowManager(args)
-        logging.info('Initializing of Symportal Workflow Manager has been completed.')
+        logging.info(
+            'Initializing of Symportal Workflow Manager has been completed.')
 
     def update_submission(self, submission):
         # Assign the associated DataSet and Study objects
@@ -42,28 +43,31 @@ class DataLoader:
 
 def generate_lock_file(filepath):
     with open(filepath, 'w') as file:
+        logging.debug(f'Lock file generated. Current process ID: {os.getpid()}')
         return
 
 
 def remove_lock_file(filepath):
     if os.path.isfile(filepath):
         os.remove(filepath)
-        logging.info(
+        logging.debug(
             f'The lock file {filepath} has been successfully removed.')
     else:
-        logging.info(f'File {filepath} does not exist.')
+        logging.debug(f'File {filepath} does not exist.')
 
 
 def lock_file_exists(filepath):
     if os.path.exists(filepath):
+        logging.debug(
+            'Cron job process exists for the current script. Exiting.')
         return True
     else:
         return False
 
 
 def check_incomplete_submissions():
-    in_progress = Submission.objects\
-        .filter(progress_status='transfer_to_framework_server_complete')\
+    in_progress = Submission.objects \
+        .filter(progress_status='transfer_to_framework_server_complete') \
         .exclude(loading_started_date_time=None)
     if in_progress:
         logging.warning(
@@ -115,7 +119,8 @@ def load_submission(submission):
             f'Data loading is complete for the {submission.name} submission object.')
     except Exception as e:
         submission.error_has_occured = True
-        error_message = 'An error has occured while trying to load the Submission data.'
+        error_message = f'An error has occured while trying to load the ' \
+                        f'Submission: {submission.name}.'
         logging.error(error_message)
         raise RuntimeError(error_message)
     finally:
@@ -144,14 +149,12 @@ if __name__ == '__main__':
 
     # Only one cron job process can be running
     if lock_file_exists(lock_file):
-        logging.debug('Cron job process exists for the current script. Exiting.')
         sys.exit(1)
 
     # Main try block that always finishes with deleting of lock file
     try:
         # Generate the lock file to have only one cron running process
         generate_lock_file(lock_file)
-        logging.debug(f'Lock file generated. Current process ID: {os.getpid()}')
         check_incomplete_submissions()
         submissions = get_submissions_to_load()
         for s in submissions:

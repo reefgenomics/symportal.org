@@ -71,10 +71,10 @@ class DataLoading:
         self.temp_working_directory = self._setup_temp_working_directory()
         self.date_time_str = date_time_str
         self.output_directory = self._setup_output_directory()
-        logging.basicConfig(format='%(levelname)s:%(message)s',
-                            filename=os.path.join(self.output_directory, f'{self.date_time_str}_log.log'), filemode='w',
-                            level=logging.INFO)
-        logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+        # logging.basicConfig(format='%(levelname)s:%(message)s',
+        #                     filename=os.path.join(self.output_directory, f'{self.date_time_str}_log.log'), filemode='w',
+        #                     level=logging.INFO)
+        # logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
         # directory for the data_explorer outputs
         self.html_dir = os.path.join(self.output_directory, 'html')
         self.js_file_path = os.path.join(self.html_dir, 'study_data.js')
@@ -2379,7 +2379,7 @@ class PotentialSymTaxScreeningWorker:
         else:
             blastn_analysis.execute_blastn_analysis(pipe_stdout_sterr=True)
 
-        logging.info(f'BLAST complete: Sample {self.sample_name}.')
+        logging.info(f'BLAST complete: Sample .')
 
         self.blast_output_as_list = blastn_analysis.return_blast_output_as_list()
 
