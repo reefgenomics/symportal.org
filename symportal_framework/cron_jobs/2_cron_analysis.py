@@ -94,7 +94,7 @@ class CronAnalysis:
         # Refresh the submission objects so that the output will still be completed even if there was not
         # an analysis to run. E.g. the script could have died after the analysis was completed.
         self.submission_objects = Submission.objects.filter(
-            progress_status="framework_analysis_complete",
+            progress_status='framework_analysis_complete',
             error_has_occured=False,
             for_analysis=True
         ).all()

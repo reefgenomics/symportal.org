@@ -33,7 +33,7 @@ class AnalysisRunner:
             f'The status of submission {submission.name} has been changed to {submission.progress_status}.')
 
     def update_output_submission(self, submission):
-        sub_obj.progress_status = 'framework_output_complete'
+        submission.progress_status = 'framework_output_complete'
         submission.study_output_complete_date_time = \
             datetime.utcnow().strftime('%Y%m%dT%H%M%S')
         submission.framework_results_dir_path = self.workflow_manager.output_dir
@@ -127,6 +127,6 @@ if __name__ == '__main__':
         submissions = get_submissions(status='framework_analysis_complete',
                                       process_type='output')
         output(submissions, num_proc)
+        logging.info('Analysis for loaded submissions has been completed.')
     finally:
         remove_lock_file(lock_file)
-        logging.info('Analysis for loaded submissions has been completed.')
