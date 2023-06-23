@@ -24,7 +24,7 @@ class AnalysisRunner:
         logging.info(
             'Initializing of Symportal Workflow Manager has been completed.')
 
-    def update_analyzed_submission(self, submission):
+    def update_analysed_submission(self, submission):
         submission.progress_status = 'framework_analysis_complete'
         submission.analysis_complete_date_time = \
             datetime.utcnow().strftime('%Y%m%dT%H%M%S')
@@ -71,7 +71,7 @@ def analyze(submissions, dataset_string, num_proc, analysis_name):
             logging.info(
                 f'Starting the workflow  for Submission: {submission.name}.')
             analysis_runner.workflow_manager.start_work_flow()
-            analysis_runner.update_analyzed_submission(submission)
+            analysis_runner.update_analysed_submission(submission)
         except Exception as e:
             error_message = f'An error has occurred while trying to analyze the ' \
                             f'Submission: {submission.name}.'
