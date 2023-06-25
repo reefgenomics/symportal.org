@@ -58,25 +58,34 @@ def get_submissions(status, process_type):
         sys.exit(1)
 
 
+def define_analysis_args(dataset_string, num_proc, analysis_name):
+    custom_args = [
+            dataset_string, '--num_proc', num_proc,
+            '--no_output',
+            '--name', analysis_name
+        ]
+    if len(DataAnalysis.objects.all()) == 0:
+        custom_args.insert(0, '--analyse_next')
+    else:
+        custom_args.insert(0, '--analyse')
+    return custom_args
+
+
 def analyze(submissions, dataset_string, num_proc, analysis_name):
-    analysis_runner = AnalysisRunner([
-        '--analyse_next', dataset_string, '--num_proc', num_proc,
-        '--no_output',
-        '--name', analysis_name
-    ])
-    for submission in submissions:
-        try:
+    try:
+        analysis_runner = AnalysisRunner(args=define_analysis_args(dataset_string, num_proc, analysis_name))
+        for submission in submissions:
             submission.analysis_started_date_time = \
                 analysis_runner.workflow_manager.date_time_str
-            logging.info(
-                f'Starting the workflow  for Submission: {submission.name}.')
-            analysis_runner.workflow_manager.start_work_flow()
             analysis_runner.update_analysed_submission(submission)
-        except Exception as e:
-            error_message = f'An error has occurred while trying to analyze the ' \
-                            f'Submission: {submission.name}.'
-            logging.error(error_message)
-            raise RuntimeError(error_message)
+        logging.info(
+            f'Starting the Analysis Workflow.')
+        analysis_runner.workflow_manager.start_work_flow()
+    except Exception as e:
+        error_message = f'An error has occurred while trying to analyze the ' \
+                        f'current barch of Study object.'
+        logging.error(error_message)
+        raise RuntimeError(error_message)
 
 
 def output(submissions, num_proc):
@@ -121,8 +130,10 @@ if __name__ == '__main__':
                                       process_type='analyze')
         dataset_objects = [s.associated_dataset for s in submissions]
         dataset_string = ','.join([str(d.id) for d in dataset_objects])
-        analysis_name = f'{datetime.utcnow().strftime("%Y%m%dT%H%M%S")}_DBV'
-        analyze(submissions, dataset_string, num_proc, analysis_name)
+        analyze(submissions=submissions,
+                dataset_string=dataset_string,
+                num_proc=num_proc,
+                analysis_name=f'{datetime.utcnow().strftime("%Y%m%dT%H%M%S")}_DBV')
 
         submissions = get_submissions(status='framework_analysis_complete',
                                       process_type='output')

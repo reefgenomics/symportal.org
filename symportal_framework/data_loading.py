@@ -2379,7 +2379,7 @@ class PotentialSymTaxScreeningWorker:
         else:
             blastn_analysis.execute_blastn_analysis(pipe_stdout_sterr=True)
 
-        logging.info(f'BLAST complete: Sample .')
+        logging.info(f'BLAST complete: Sample {self.sample_name}.')
 
         self.blast_output_as_list = blastn_analysis.return_blast_output_as_list()
 

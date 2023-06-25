@@ -684,6 +684,7 @@ class SymPortalWorkFlowManager:
         self.output_type_count_table_obj.output_types()
 
     def create_new_data_analysis_obj(self):
+        logging.info(f'Creating a new DataAnalysis object: {self.args.name}.')
         self.data_analysis_object = DataAnalysis(
             list_of_data_set_uids=self.args.analyse, within_clade_cutoff=self.within_clade_cutoff,
             name=self.args.name, time_stamp=self.date_time_str,
