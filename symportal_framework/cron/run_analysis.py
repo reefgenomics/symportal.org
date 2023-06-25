@@ -60,20 +60,21 @@ def get_submissions(status, process_type):
 
 def define_analysis_args(dataset_string, num_proc, analysis_name):
     custom_args = [
-            dataset_string, '--num_proc', num_proc,
-            '--no_output',
-            '--name', analysis_name
-        ]
+        dataset_string, '--num_proc', num_proc,
+        '--no_output',
+        '--name', analysis_name
+    ]
     if len(DataAnalysis.objects.all()) == 0:
-        custom_args.insert(0, '--analyse_next')
-    else:
         custom_args.insert(0, '--analyse')
+    else:
+        custom_args.insert(0, '--analyse_next')
     return custom_args
 
 
 def analyze(submissions, dataset_string, num_proc, analysis_name):
     try:
-        analysis_runner = AnalysisRunner(args=define_analysis_args(dataset_string, num_proc, analysis_name))
+        analysis_runner = AnalysisRunner(
+            args=define_analysis_args(dataset_string, num_proc, analysis_name))
         for submission in submissions:
             submission.analysis_started_date_time = \
                 analysis_runner.workflow_manager.date_time_str
