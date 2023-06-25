@@ -9,7 +9,7 @@ To set up environment variables, create `.env` file and put neccesary credential
 ```
 CONTACT_EMAIL_ADDRESS='yulia.iakovleva@uni-konstanz.de'
 
-GOOGLE_MAPS_API_KEI=''
+GOOGLE_MAPS_API_KEY=''
 
 POSTGRES_USER=''
 POSTGRES_PASSWORD=''

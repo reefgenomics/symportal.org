@@ -91,7 +91,7 @@ def get_study_by_name_from_orm_study_list(study_name_to_match):
 @app.route('/data_explorer/', methods=['POST'])
 def data_explorer():
     # get the google maps api key to be used
-    map_key = os.environ.get('GOOGLE_MAPS_API_KEI')
+    map_key = os.environ.get('GOOGLE_MAPS_API_KEY')
     # Here we are going to load the data_explorer page
     # We will need to provide the database object that represents the study_to_load string
     # provided by the request.
@@ -238,7 +238,7 @@ def profile():
         # Then someone has clicked on one of the study titles
         # and we should send them to the DataExplorer view of respective study
         # get the google maps api key to be used
-        map_key = os.environ.get('GOOGLE_MAPS_API_KEI')
+        map_key = os.environ.get('GOOGLE_MAPS_API_KEY')
         # Here we are going to load the data_explorer page
         # We will need to provide the database object that represents the study_to_load string
         # provided by the request.

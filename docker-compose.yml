@@ -58,6 +58,7 @@ services:
       - SFTP_HOME=${SFTP_HOME}
       - SYMPORTAL_DATABASE_CONTAINER=${SYMPORTAL_DATABASE_CONTAINER}
       - SYMPORTAL_SFTP_SERVER_CONTAINER=${SYMPORTAL_SFTP_SERVER_CONTAINER}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
     command: >
       bash -c "./wait-for-db.sh && tail -f /dev/null"
     depends_on:
