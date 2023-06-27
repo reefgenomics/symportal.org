@@ -40,6 +40,29 @@ class SFTPClient:
         if self.client is not None:
             self.client.close()
 
+    def create_remote_dirs(self):
+        folders = self.remote_submission_path.split('/')
+        current_path = ''
+
+        sftp = self.client.open_sftp()
+
+        try:
+            for folder in folders:
+                if folder:
+                    current_path += '/' + folder
+                    try:
+                        sftp.chdir(current_path)
+                    except IOError:
+                        try:
+                            sftp.mkdir(current_path)
+                        except IOError as e:
+                            # If the folder creation failed, raise an exception or handle the error
+                            logging.error(
+                                f'Failed to create folder: {current_path}. Error: {str(e)}')
+            logging.info(f'Remote submission path exists or were created: {self.remote_submission_path}')
+        finally:
+            sftp.close()
+
     def copy_submission(self):
         if self.client is None:
             raise Exception("Not connected to SFTP server.")
@@ -50,29 +73,14 @@ class SFTPClient:
 
         sftp = self.client.open_sftp()
 
-        # We assume the user folder may exist
-        try:
-            sftp.mkdir(f'{self.remote_path}/{self.remote_path_username}')
-            logging.info(
-                f'Remote submission user folder created: {self.remote_path}/{self.remote_path_username}.')
-        except IOError:
-            logging.info(
-                f'Remote submission path already exists: {self.remote_path}/{self.remote_path_username}.')
-
-        try:
-            sftp.mkdir(self.remote_submission_path)
-            logging.info(
-                f'Remote submission path created: {self.remote_submission_path}.')
-        except IOError:
-            logging.error(
-                f'Remote submission path already exists: {self.remote_submission_path}.')
-
         try:
             for item in os.listdir(self.local_path):
                 # Copy file to remote
                 sftp.put(os.path.join(self.local_path, item),
                          os.path.join(self.remote_submission_path, item))
                 logging.info(f'Done with {item}.')
+        except Exception as e:
+            logging.error(f'An error has occurred: {str(e)}')
         finally:
             sftp.close()
 
@@ -215,6 +223,7 @@ if __name__ == '__main__':
         try:
             # Connect to the SFTP server
             sftp_client.connect()
+            sftp_client.create_remote_dirs()
             # Process submission
             sftp_client.copy_submission()
             if sftp_client.md5sum_check():
