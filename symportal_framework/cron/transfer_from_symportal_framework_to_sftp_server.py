@@ -1,11 +1,9 @@
 import os
 import sys
-import glob
-import django
-import hashlib
 import logging
+import zipfile
 import paramiko
-
+from collections import deque
 # Lock file logic for one existing cron job
 from transfer_from_sftp_server_to_symportal_framework import generate_lock_file, \
     lock_file_exists, remove_lock_file
@@ -29,8 +27,8 @@ class SFTPClient:
         self.remote_output_path = \
             os.path.join(
                 self.remote_path,
-                self.local_path.split()[-1],
-                self.local_path.split()[-2])
+                self.local_path.split('/')[-1],
+                self.local_path.split('/')[-2])
 
     def connect(self):
         self.client = paramiko.SSHClient()
@@ -42,9 +40,45 @@ class SFTPClient:
         if self.client is not None:
             self.client.close()
 
+    def create_remote_dirs(self):
+        folders = self.remote_output_path.split('/')
+        current_path = ''
+
+        sftp = self.client.open_sftp()
+
+        try:
+            for folder in folders:
+                if folder:
+                    current_path += '/' + folder
+                    try:
+                        sftp.chdir(current_path)
+                    except IOError:
+                        try:
+                            sftp.mkdir(current_path)
+                        except IOError as e:
+                            # If the folder creation failed, raise an exception or handle the error
+                            logging.error(
+                                f'Failed to create folder: {current_path}. '
+                                f'Error: {str(e)}')
+            logging.info(f'Remote submission path exists or were created: '
+                         f'{self.remote_output_path}')
+        finally:
+            sftp.close()
+
+    def compress_output(self, submission):
+        output_path = os.path.join(self.local_path, submission.name) + '.zip'
+        folder_path = self.local_path
+        with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(folder_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    zipf.write(file_path, os.path.relpath(file_path, folder_path))
+        logging.info(
+            f'Folder {folder_path} zipped to {output_path} successfully.')
+
     def copy_analysis_output(self):
         if self.client is None:
-            raise Exception("Not connected to SFTP server.")
+            raise Exception('Not connected to SFTP server.')
 
         if not os.path.isdir(self.local_path):
             raise Exception(
@@ -53,19 +87,11 @@ class SFTPClient:
         sftp = self.client.open_sftp()
 
         try:
-            # copy logic
-            for item in os.listdir(self.local_path):
-                item_local_path = os.path.join(self.local_path, item)
-                item_remote_path = os.path.join(self.remote_output_path, item)
-
-                # If it's a file, copy it to the remote server
-                if os.path.isfile(item_local_path):
-                    sftp.put(item_local_path, item_remote_path)
-                    logging.info(f'Done with {item}.')
-                # If it's a directory, recursively copy its contents
-                elif os.path.isdir(item_local_path):
-                    sftp.mkdir(item_remote_path)
-                    self.copy_analysis_output()
+            sftp.put(os.path.join(self.local_path, submission.name) + '.zip',
+                     os.path.join(self.remote_output_path) + '.zip')
+            logging.info(f'Output {submission.name}.zip archive was '
+                         f'successfully transferred to remote '
+                         f'SFTP Server: {self.remote_output_path}')
         finally:
             sftp.close()
 
@@ -102,6 +128,8 @@ if __name__ == '__main__':
             # Connect to the SFTP server
             sftp_client.connect()
             # Process submission
+            sftp_client.create_remote_dirs()
+            sftp_client.compress_output(submission)
             sftp_client.copy_analysis_output()
         finally:
             pass

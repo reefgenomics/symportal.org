@@ -45,7 +45,7 @@ class SFTPClient:
 
     def copy_submission(self):
         if self.client is None:
-            raise Exception("Not connected to SFTP server.")
+            raise Exception('Not connected to SFTP server.')
 
         sftp = self.client.open_sftp()
 
