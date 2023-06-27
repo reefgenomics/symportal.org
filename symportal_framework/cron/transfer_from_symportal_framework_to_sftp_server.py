@@ -99,7 +99,7 @@ class SFTPClient:
 
 
 def update_submission_status(submission):
-    submission.submission.progress_status = 'transfer_from_framework_to_sftp_server_complete'
+    submission.progress_status = 'transfer_from_framework_to_sftp_server_complete'
     submission.save()
     logging.info(
         f'The submission status has been updated to {submission.progress_status}.')
