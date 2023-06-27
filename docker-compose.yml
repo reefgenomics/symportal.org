@@ -12,8 +12,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     restart: always
     container_name: ${SYMPORTAL_DATABASE_CONTAINER}
-    volumes:
-      - /mnt/postgresql/data:/var/lib/postgresql/data
 
   flask-app:
     build:

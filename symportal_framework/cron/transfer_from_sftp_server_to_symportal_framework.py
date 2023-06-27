@@ -2,7 +2,6 @@ import os
 import sys
 import glob
 import django
-import shutil
 import hashlib
 import logging
 import paramiko
@@ -30,6 +29,7 @@ class SFTPClient:
             self.submission.name)
         self.remote_path = os.path.join(
             os.getenv('SFTP_HOME'),
+            'uploads',
             self.submission.submitting_user.name,
             self.submission.name)
 
@@ -159,10 +159,10 @@ def lock_file_exists(filepath):
         return False
 
 
-def get_submissions_to_transfer():
+def get_submissions_to_transfer(status):
     # Return QuerySet
     return Submission.objects.filter(
-        progress_status='transfer_to_sftp_server_complete',
+        progress_status=status,
         error_has_occured=False)
 
 
@@ -189,7 +189,7 @@ if __name__ == '__main__':
         logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
 
         submission = select_submission(
-            get_submissions_to_transfer())
+            get_submissions_to_transfer(status='transfer_to_sftp_server_complete'))
 
         logging.info(
             f'Establish connection with SFTP Server: {os.getenv("SYMPORTAL_DATABASE_CONTAINER")}.')

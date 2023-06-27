@@ -27,7 +27,7 @@ class SFTPClient:
         self.remote_path_username = os.path.basename(
             os.path.dirname(self.local_path))
         self.submission_name = os.path.basename(self.local_path)
-        self.remote_path_submission_path = \
+        self.remote_submission_path = \
             f'{self.remote_path}/{self.remote_path_username}/{self.submission_name}'
 
     def connect(self):
@@ -56,22 +56,22 @@ class SFTPClient:
             logging.info(
                 f'Remote submission user folder created: {self.remote_path}/{self.remote_path_username}.')
         except IOError:
-            logging.error(
+            logging.info(
                 f'Remote submission path already exists: {self.remote_path}/{self.remote_path_username}.')
 
         try:
-            sftp.mkdir(self.remote_path_submission_path)
+            sftp.mkdir(self.remote_submission_path)
             logging.info(
-                f'Remote submission path created: {self.remote_path_submission_path}.')
+                f'Remote submission path created: {self.remote_submission_path}.')
         except IOError:
             logging.error(
-                f'Remote submission path already exists: {self.remote_path_submission_path}.')
+                f'Remote submission path already exists: {self.remote_submission_path}.')
 
         try:
             for item in os.listdir(self.local_path):
                 # Copy file to remote
                 sftp.put(os.path.join(self.local_path, item),
-                         os.path.join(self.remote_path_submission_path, item))
+                         os.path.join(self.remote_submission_path, item))
                 logging.info(f'Done with {item}.')
         finally:
             sftp.close()
@@ -105,7 +105,7 @@ class SFTPClient:
         sftp = self.client.open_sftp()
 
         for filename, existing_checksum in md5sum_dict.items():
-            remote_file_path = os.path.join(self.remote_path_submission_path,
+            remote_file_path = os.path.join(self.remote_submission_path,
                                             filename)
             # Calculate the MD5 checksum of the remote file
             md5_hash = hashlib.md5()
@@ -210,7 +210,7 @@ if __name__ == '__main__':
             username=os.getenv('SFTP_USERNAME'),
             password=os.getenv('SFTP_PASSWORD'),
             local_path=select_submission(submissions),
-            remote_path=os.getenv("SFTP_HOME"))
+            remote_path=os.path.join(os.getenv('SFTP_HOME'), 'uploads'))
 
         try:
             # Connect to the SFTP server

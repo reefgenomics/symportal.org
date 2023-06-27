@@ -24,3 +24,4 @@
 */1 * * * * /opt/conda/bin/python /app/cron/transfer_from_sftp_server_to_symportal_framework.py >> /var/log/transfer_from_sftp_server_to_symportal_framework.log 2>&1
 */1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh && conda activate base && python /app/cron/load_data.py' >> /var/log/load_data.log 2>&1
 */1 * * * * bash -c 'source /opt/conda/etc/profile.d/conda.sh && conda activate base && python /app/cron/run_analysis.py' >> /var/log/run_analysis.log 2>&1
+*/1 * * * * /opt/conda/bin/python /app/cron/transfer_from_symportal_framework_to_sftp_server.py >> /var/log/transfer_from_symportal_framework_to_sftp_server.log 2>&1
