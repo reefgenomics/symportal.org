@@ -88,7 +88,7 @@ class SFTPClient:
 
         try:
             sftp.put(os.path.join(self.local_path, submission.name) + '.zip',
-                     os.path.join(self.remote_output_path) + '.zip')
+                     os.path.join(self.remote_output_path, submission.name) + '.zip')
             logging.info(f'Output {submission.name}.zip archive was '
                          f'successfully transferred to remote '
                          f'SFTP Server: {self.remote_output_path}')
