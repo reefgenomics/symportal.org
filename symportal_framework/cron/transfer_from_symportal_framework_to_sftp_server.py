@@ -72,7 +72,8 @@ class SFTPClient:
             for root, _, files in os.walk(folder_path):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    zipf.write(file_path, os.path.relpath(file_path, folder_path))
+                    zipf.write(file_path,
+                               os.path.relpath(file_path, folder_path))
         logging.info(
             f'Folder {folder_path} zipped to {output_path} successfully.')
 
@@ -88,12 +89,20 @@ class SFTPClient:
 
         try:
             sftp.put(os.path.join(self.local_path, submission.name) + '.zip',
-                     os.path.join(self.remote_output_path, submission.name) + '.zip')
+                     os.path.join(self.remote_output_path,
+                                  submission.name) + '.zip')
             logging.info(f'Output {submission.name}.zip archive was '
                          f'successfully transferred to remote '
                          f'SFTP Server: {self.remote_output_path}')
         finally:
             sftp.close()
+
+
+def update_submission_status(submission):
+    submission.submission.progress_status = 'transfer_from_framework_to_sftp_server_complete'
+    submission.save()
+    logging.info(
+        f'The submission status has been updated to {submission.progress_status}.')
 
 
 if __name__ == '__main__':
@@ -131,6 +140,7 @@ if __name__ == '__main__':
             sftp_client.create_remote_dirs()
             sftp_client.compress_output(submission)
             sftp_client.copy_analysis_output()
+            update_submission_status(submission)
         finally:
             pass
 
