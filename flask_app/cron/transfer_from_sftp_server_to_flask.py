@@ -1,6 +1,12 @@
+#!/usr/bin/env python3
 import os
+import sys
 import logging
 import paramiko
+
+from sp_app import db
+from sp_app.models import Submission
+from transfer_from_flask_app_to_sftp_server import generate_lock_file, lock_file_exists, remove_lock_file
 
 # Configure logging
 logging.basicConfig(
@@ -26,12 +32,35 @@ class SFTPClient:
         if self.client is not None:
             self.client.close()
 
+    def copy_analysis_output(self):
+        if self.client is None:
+            raise Exception('Not connected to SFTP server.')
+
+        if not os.path.isdir(self.local_path):
+            raise Exception(
+                f'Invalid local directory path : {self.local_path}.')
+
+        sftp = self.client.open_sftp()
+
+        try:
+            sftp.get(
+                os.path.join(self.remote_path,
+                             submission.name) + '.zip',
+                os.path.join(self.local_path, submission.name) + '.zip'
+            )
+            logging.info(f'Output {submission.name}.zip archive was '
+                         f'successfully transferred to Flask App: '
+                         f'{self.local_path}')
+        finally:
+            sftp.close()
+
 
 def get_submissions_to_transfer(status):
     # Return QuerySet
-    return Submission.objects.filter(
-        progress_status=status,
-        error_has_occured=False)
+    return Submission.query. \
+        filter(Submission.progress_status == status). \
+        filter(Submission.error_has_occured == False). \
+        all()
 
 
 def select_submission(submissions):
@@ -66,12 +95,12 @@ if __name__ == '__main__':
             hostname=os.getenv('SYMPORTAL_SFTP_SERVER_CONTAINER'),
             username=os.getenv('SFTP_USERNAME'),
             password=os.getenv('SFTP_PASSWORD'),
-            local_path=submission.framework_results_dir_path,
+            local_path=os.path.join('/app/sp_app/explorer_data', submission.name),
             remote_path=os.path.join(
                 os.getenv('SFTP_HOME'),
                 'outputs',
-                submission.framework_results_dir_path('/')[-1],
-                submission.framework_results_dir_path('/')[-2])
+                submission.framework_results_dir_path('/')[-2],
+                submission.framework_results_dir_path('/')[-1])
         )
 
         try:
@@ -79,7 +108,7 @@ if __name__ == '__main__':
             sftp_client.connect()
             # Process submission
             sftp_client.copy_analysis_output()
-            update_submission_status(submission)
+            # update_submission_status(submission)
         finally:
             pass
 

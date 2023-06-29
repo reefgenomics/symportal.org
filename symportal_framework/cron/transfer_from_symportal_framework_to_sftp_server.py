@@ -1,9 +1,9 @@
+#!/usr/bin/env python3
 import os
 import sys
 import logging
 import zipfile
 import paramiko
-from collections import deque
 # Lock file logic for one existing cron job
 from transfer_from_sftp_server_to_symportal_framework import generate_lock_file, \
     lock_file_exists, remove_lock_file
@@ -27,8 +27,8 @@ class SFTPClient:
         self.remote_output_path = \
             os.path.join(
                 self.remote_path,
-                self.local_path.split('/')[-1],
-                self.local_path.split('/')[-2])
+                self.local_path.split('/')[-2],
+                self.local_path.split('/')[-1])
 
     def connect(self):
         self.client = paramiko.SSHClient()
