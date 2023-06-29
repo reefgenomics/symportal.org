@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import hashlib
 import os
 import sys
 import logging
@@ -91,11 +92,27 @@ class SFTPClient:
             sftp.put(os.path.join(self.local_path, submission.name) + '.zip',
                      os.path.join(self.remote_output_path,
                                   submission.name) + '.zip')
+            sftp.put(os.path.join(self.local_path, submission.name) + '.md5sum',
+                     os.path.join(self.remote_output_path,
+                                  submission.name) + '.md5sum')
             logging.info(f'Output {submission.name}.zip archive was '
                          f'successfully transferred to remote '
                          f'SFTP Server: {self.remote_output_path}')
         finally:
             sftp.close()
+
+
+def calculate_checksum(file_path, algorithm='md5'):
+    hash_algorithm = hashlib.new(algorithm)
+
+    with open(file_path, 'rb') as file:
+        for chunk in iter(lambda: file.read(4096), b''):
+            hash_algorithm.update(chunk)
+
+
+def write_checksum_to_file(file_path, checksum):
+    with open(file_path, 'w') as file:
+        file.write(checksum)
 
 
 def update_submission_status(submission):
@@ -139,10 +156,12 @@ if __name__ == '__main__':
             # Process submission
             sftp_client.create_remote_dirs()
             sftp_client.compress_output(submission)
+            calculate_checksum(file_path=os.path.join(sftp_client.remote_output_path, submission.name) + '.zip')
+            write_checksum_to_file(file_path=os.path.join(sftp_client.remote_output_path, submission.name) + '.md5sum')
             sftp_client.copy_analysis_output()
             update_submission_status(submission)
         finally:
-            pass
+            sftp_client.disconnect()
 
     finally:
         remove_lock_file(lock_file)

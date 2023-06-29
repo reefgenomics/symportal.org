@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import sys
+import shutil
+import zipfile
 import logging
 import paramiko
 
@@ -37,8 +39,8 @@ class SFTPClient:
             raise Exception('Not connected to SFTP server.')
 
         if not os.path.isdir(self.local_path):
-            raise Exception(
-                f'Invalid local directory path : {self.local_path}.')
+            os.makedirs(self.local_path, exist_ok=True)
+            logging.info(f'Explorer data folder has been created: {self.local_path}.')
 
         sftp = self.client.open_sftp()
 
@@ -53,6 +55,14 @@ class SFTPClient:
                          f'{self.local_path}')
         finally:
             sftp.close()
+
+    def unzip_archive(self, archive_path, destination_dir):
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extractall(destination_dir)
+        shutil.move(
+            os.path.join(destination_dir, 'html', 'study_data.js'),
+            os.path.join(destination_dir, 'study_data.js'))
+        logging.info(f'Extracting files from the archive to {destination_dir}.')
 
 
 def get_submissions_to_transfer(status):
@@ -99,8 +109,8 @@ if __name__ == '__main__':
             remote_path=os.path.join(
                 os.getenv('SFTP_HOME'),
                 'outputs',
-                submission.framework_results_dir_path('/')[-2],
-                submission.framework_results_dir_path('/')[-1])
+                submission.framework_results_dir_path.split('/')[-2],
+                submission.framework_results_dir_path.split('/')[-1])
         )
 
         try:
@@ -108,9 +118,9 @@ if __name__ == '__main__':
             sftp_client.connect()
             # Process submission
             sftp_client.copy_analysis_output()
-            # update_submission_status(submission)
+            sftp_client.unzip_archive(f'{sftp_client.local_path}/{submission.name}.zip', sftp_client.local_path)
         finally:
-            pass
+            sftp_client.disconnect()
 
     finally:
         remove_lock_file(lock_file)
