@@ -45,11 +45,12 @@ class SFTPClient:
         sftp = self.client.open_sftp()
 
         try:
-            sftp.get(
-                os.path.join(self.remote_path,
-                             submission.name) + '.zip',
-                os.path.join(self.local_path, submission.name) + '.zip'
-            )
+            for extension in ['.zip', '.md5sum']:
+                sftp.get(
+                    os.path.join(self.remote_path,
+                                 submission.name) + extension,
+                    os.path.join(self.local_path, submission.name) + extension
+                )
             logging.info(f'Output {submission.name}.zip archive was '
                          f'successfully transferred to Flask App: '
                          f'{self.local_path}')
