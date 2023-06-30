@@ -53,7 +53,9 @@ class SFTPClient:
                 )
             logging.info(f'Output {submission.name}.zip archive was '
                          f'successfully transferred to Flask App: '
-                         f'{self.local_path}')
+                         f'{self.local_path}.')
+        except Exception as e:
+            logging.error(f'Exception on channel: {str(e)}.')
         finally:
             sftp.close()
 
@@ -94,7 +96,6 @@ if __name__ == '__main__':
     try:
         # Generate the lock file to have only one cron running process
         generate_lock_file(lock_file)
-        logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
 
         submission = select_submission(
             get_submissions_to_transfer(
