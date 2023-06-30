@@ -109,6 +109,8 @@ def calculate_checksum(file_path, algorithm='md5'):
         for chunk in iter(lambda: file.read(4096), b''):
             hash_algorithm.update(chunk)
 
+    return hash_algorithm.hexdigest()
+
 
 def write_checksum_to_file(file_path, checksum):
     with open(file_path, 'w') as file:
@@ -156,8 +158,8 @@ if __name__ == '__main__':
             # Process submission
             sftp_client.create_remote_dirs()
             sftp_client.compress_output(submission)
-            calculate_checksum(file_path=os.path.join(sftp_client.remote_output_path, submission.name) + '.zip')
-            write_checksum_to_file(file_path=os.path.join(sftp_client.remote_output_path, submission.name) + '.md5sum')
+            write_checksum_to_file(file_path=os.path.join(sftp_client.local_path, submission.name) + '.md5sum',
+                                   checksum=calculate_checksum(file_path=os.path.join(sftp_client.local_path, submission.name) + '.zip'))
             sftp_client.copy_analysis_output()
             update_submission_status(submission)
         finally:
