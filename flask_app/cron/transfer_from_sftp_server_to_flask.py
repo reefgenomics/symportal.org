@@ -2,6 +2,7 @@
 import os
 import sys
 import shutil
+import hashlib
 import zipfile
 import logging
 import paramiko
@@ -51,13 +52,33 @@ class SFTPClient:
                                  submission.name) + extension,
                     os.path.join(self.local_path, submission.name) + extension
                 )
-            logging.info(f'Output {submission.name}.zip archive was '
-                         f'successfully transferred to Flask App: '
-                         f'{self.local_path}.')
+                logging.info(f'Output {submission.name}{extension} file was '
+                             f'successfully transferred to Flask App: '
+                             f'{self.local_path}.')
         except Exception as e:
             logging.error(f'Exception on channel: {str(e)}.')
         finally:
             sftp.close()
+
+    def md5sum_check(self):
+
+        with open(os.path.join(self.local_path, submission.name) + '.md5sum', 'r') as file:
+            md5sum = file.read()
+
+        md5_hash = hashlib.md5()
+        with open(os.path.join(self.local_path, submission.name) + '.zip', 'rb') as file:
+            for chunk in iter(lambda: file.read(4096), b''):
+                md5_hash.update(chunk)
+        actual_md5sum = md5_hash.hexdigest()
+        if actual_md5sum == md5sum:
+            logging.info('MD5 checksum matches!')
+        else:
+            logging.error(
+                f'MD5 checksum does not match.\n'
+                f'    Expected MD5 checksum: {md5sum}.\n'
+                f'    Actual MD5 checksum: {actual_md5sum}.')
+
+
 
     def unzip_archive(self, archive_path, destination_dir):
         with zipfile.ZipFile(archive_path, 'r') as zip_ref:
@@ -120,6 +141,7 @@ if __name__ == '__main__':
             sftp_client.connect()
             # Process submission
             sftp_client.copy_analysis_output()
+            sftp_client.md5sum_check()
             sftp_client.unzip_archive(f'{sftp_client.local_path}/{submission.name}.zip', sftp_client.local_path)
         finally:
             sftp_client.disconnect()
