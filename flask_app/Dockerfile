@@ -2,7 +2,7 @@
 FROM python:3.9
 
 # Install SSH client
-RUN apt-get update && apt-get install -y openssh-client cron
+RUN apt-get update && apt-get install -y openssh-client cron logrotate
 
 # Set working directory
 WORKDIR /app
@@ -13,6 +13,8 @@ COPY requirements.txt .
 # Install application dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy logrotate configuration file
+COPY ./cron/symportal.logrotate /etc/logrotate.d/symportal.logrotate
 # Copy the rest of the application code
 COPY . .
 

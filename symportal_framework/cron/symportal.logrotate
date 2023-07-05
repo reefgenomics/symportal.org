@@ -1,0 +1,6 @@
+/var/log/load_data.log /var/log/run_analysis.log /var/log/transfer_from_sftp_server_to_symportal_framework.log /var/log/transfer_from_symportal_framework_to_sftp_server.log {
+    daily
+    rotate 7
+    missingok
+    notifempty
+}
