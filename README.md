@@ -48,7 +48,7 @@ It utilizes Docker Compose to manage four containers:
 
 Here below is an overview of the application architecture schema.
 
-![image](https://github.com/greenjune-ship-it/symportal-2.0/assets/83506881/fcbf98a6-37e5-4d07-8940-e39f6b96cacc)
+![image](https://github.com/greenjune-ship-it/symportal-2.0/assets/83506881/9a0b14e8-6acc-470f-863b-b814173fa5e9)
 
 ## About
 
