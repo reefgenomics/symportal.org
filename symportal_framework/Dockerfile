@@ -2,7 +2,7 @@
 FROM continuumio/miniconda3:23.3.1-0
 
 # Install SSH client
-RUN apt-get update && apt-get install -y openssh-client cron
+RUN apt-get update && apt-get install -y openssh-client cron logrotate
 
 # Set working directory
 WORKDIR /app
@@ -31,12 +31,17 @@ RUN SECRET_KEY=$(base64 /dev/urandom | head -c50) && \
 RUN sed -i "s/user_name = \"undefined\"/user_name = \"bcchume\"/g" sp_config.py && \
     sed -i "s/user_email = \"undefined\"/user_email = \"bcchume@symportal.org\"/g" sp_config.py
 
+# Copy logrotate configuration file
+COPY ./cron/symportal.logrotate /etc/logrotate.d/symportal.logrotate
 # Copy the rest of the application code
 COPY . .
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV DJANGO_SETTINGS_MODULE=settings
+
+# Set up proper permissions for logrotate configuration file
+RUN chmod 0644 /etc/logrotate.d/symportal.logrotate
 
 # Run your application
 CMD ["bash"]
