@@ -1,5 +1,5 @@
 /var/log/transfer_from_flask_app_to_sftp_server.log /var/log/transfer_from_sftp_server_to_flask.log {
-    minutely
+    daily
     rotate 7
     compress
     missingok
