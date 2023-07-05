@@ -91,7 +91,7 @@ def get_study_by_name_from_orm_study_list(study_name_to_match):
 @app.route('/data_explorer/', methods=['POST'])
 def data_explorer():
     # get the google maps api key to be used
-    map_key = os.environ.get('GOOGLE_MAPS_API_KEI')
+    map_key = os.environ.get('GOOGLE_MAPS_API_KEY')
     # Here we are going to load the data_explorer page
     # We will need to provide the database object that represents the study_to_load string
     # provided by the request.
@@ -168,6 +168,10 @@ def submit_data_learn_more():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+
+        # Log the user authentication debug
+        app.logger.debug(f'User {current_user.name} is already authenticated')
+
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -179,6 +183,10 @@ def login():
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
+
+        # Log the user authentication info
+        app.logger.info(f'User {current_user.name} is authenticated')
+
         return redirect(next_page)
     return render_template('login.html', form=form, email_address=os.getenv('CONTACT_EMAIL_ADDRESS'))
 
@@ -230,7 +238,7 @@ def profile():
         # Then someone has clicked on one of the study titles
         # and we should send them to the DataExplorer view of respective study
         # get the google maps api key to be used
-        map_key = os.environ.get('GOOGLE_MAPS_API_KEI')
+        map_key = os.environ.get('GOOGLE_MAPS_API_KEY')
         # Here we are going to load the data_explorer page
         # We will need to provide the database object that represents the study_to_load string
         # provided by the request.
@@ -724,7 +732,7 @@ def _check_submission():
                                'upload your sequencing files.</strong><br>'
                                'Please try again.<br>'
                                'If the error persists, please get in contact at:<br>'
-                               '&#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;<br>'
+                               f"{os.getenv('CONTACT_EMAIL_ADDRESS')}<br>"
                                f'The full backend traceback is:<br><br>{tb}',
                     "error_type": "unhandled_error",
                     "response_type": "seq_file_upload",

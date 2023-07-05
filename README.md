@@ -9,11 +9,17 @@ To set up environment variables, create `.env` file and put neccesary credential
 ```
 CONTACT_EMAIL_ADDRESS='yulia.iakovleva@uni-konstanz.de'
 
-GOOGLE_MAPS_API_KEI=''
+GOOGLE_MAPS_API_KEY=''
 
 POSTGRES_USER=''
 POSTGRES_PASSWORD=''
 POSTGRES_DB=''
+
+SFTP_UID=1001
+SFTP_GID=1001
+SFTP_USERNAME=''
+SFTP_PASSWORD=''
+SFTP_HOME=''
 
 SYMPORTAL_DATABASE_CONTAINER=symportal-database
 SYMPORTAL_FLASK_CONTAINER=symportal-flask

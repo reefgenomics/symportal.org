@@ -71,10 +71,10 @@ class DataLoading:
         self.temp_working_directory = self._setup_temp_working_directory()
         self.date_time_str = date_time_str
         self.output_directory = self._setup_output_directory()
-        logging.basicConfig(format='%(levelname)s:%(message)s',
-                            filename=os.path.join(self.output_directory, f'{self.date_time_str}_log.log'), filemode='w',
-                            level=logging.INFO)
-        logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+        # logging.basicConfig(format='%(levelname)s:%(message)s',
+        #                     filename=os.path.join(self.output_directory, f'{self.date_time_str}_log.log'), filemode='w',
+        #                     level=logging.INFO)
+        # logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
         # directory for the data_explorer outputs
         self.html_dir = os.path.join(self.output_directory, 'html')
         self.js_file_path = os.path.join(self.html_dir, 'study_data.js')
@@ -247,6 +247,7 @@ class DataLoading:
         for line in self.thread_safe_general.decode_utf8_binary_to_list(mothur_version_cmd.stdout):
             if "1.43" in line:
                 return
+        logging.error('Installed mothur version is not equal to 1.43.')
         raise RuntimeError('SymPortal currently uses version 1.43 of mothur.\nCheck your version.')
 
     def _make_new_dataset_object(self):
@@ -974,10 +975,12 @@ class DataLoading:
                 collection_longitude = float(self.sample_meta_info_df.loc[sampleName, 'collection_longitude'])
                 if math.isnan(collection_latitude) or math.isnan(collection_longitude):
                     collection_latitude = float(999)
-                    print('conversion problem with collection_latitude or collection_longitude, converting both to 999')
+                    logging.warning(
+                        'Conversion problem with collection_latitude or collection_longitude, converting both to 999.')
                     collection_longitude = float(999)
             except:
-                print('conversion problem with collection_latitude or collection_longitude, converting both to 999')
+                logging.warning(
+                    'Conversion problem with collection_latitude or collection_longitude, converting both to 999.')
                 collection_latitude = float(999)
                 collection_longitude = float(999)
 
@@ -1292,13 +1295,14 @@ class DataLoading:
         for df_ind in self.sample_meta_info_df.index.values.tolist():
             fwd_file = self.sample_meta_info_df.at[df_ind, 'fastq_fwd_file_name']
             rev_file = self.sample_meta_info_df.at[df_ind, 'fastq_rev_file_name']
+            submission_user = self.user_input_path.split('_')[1]
             if '/' not in fwd_file:
-                fwd_file_path = os.path.join(self.user_input_path, fwd_file)
+                fwd_file_path = os.path.join('/mnt', submission_user, self.user_input_path, fwd_file)
                 self.sample_meta_info_df.at[df_ind, 'fastq_fwd_file_name'] = fwd_file_path
             else:
                 fwd_file_path = fwd_file
             if '/' not in rev_file:
-                rev_file_path = os.path.join(self.user_input_path, rev_file)
+                rev_file_path = os.path.join('/mnt', submission_user, self.user_input_path, rev_file)
                 self.sample_meta_info_df.at[df_ind, 'fastq_rev_file_name'] = rev_file_path
             else:
                 rev_file_path = rev_file
@@ -1331,23 +1335,24 @@ class DataLoading:
                     file_not_found_list.append(rev_file_path)
             # NB if we were unable to find either the fwd or rev read then we will not be able
             # to continue with our checks
-            if  rev_file_path in file_not_found_list or fwd_file_path in file_not_found_list:
+            if rev_file_path in file_not_found_list or fwd_file_path in file_not_found_list:
                 continue
 
             # Check file size
             if os.path.getsize(fwd_file_path) < 300 or os.path.getsize(rev_file_path) < 300:
-                print(f'WARNING: At least one of the seq files for sample {df_ind} is less than 300 bytes in size')
-                print(f'{df_ind} will be removed from your datasheet and analysis')
+                logging.warning(f'At least one of the seq files for sample {df_ind} is less than 300 bytes in size.')
+                logging.warning(f'{df_ind} will be removed from your datasheet and analysis.')
                 rows_to_drop.append(df_ind)
 
         # drop the rows that had size violations
         self.sample_meta_info_df.drop(index=rows_to_drop, inplace=True)
 
         if file_not_found_list:
-            print('Some of the sequencing files listed in your datasheet cannot be found:')
-            for file_name in file_not_found_list:
-                print(f'{file_name}')
+            logging.warning(
+                'Some of the sequencing files listed in your datasheet cannot be found:\n' + '\n'.join(
+                    [f'    {f}' for f in file_not_found_list]))
             sys.exit()
+        logging.info('All sequence files have been successfully found.')
 
     def _check_datasheet_df_vals_unique(self):
         # check sample names
@@ -2052,7 +2057,7 @@ class InitialMothurWorker:
         self.thread_safe_general = ThreadSafeGeneral()
 
     def start_initial_mothur_worker(self):
-        sys.stdout.write(f'{self.sample_name}: QC started\n')
+        logging.info(f'QC started: Sample {self.sample_name}.')
 
         self._do_make_contigs()
 
@@ -2076,13 +2081,13 @@ class InitialMothurWorker:
 
         self.output_queue_for_attribute_data.put(self.dss_att_holder)
 
-        sys.stdout.write(f'{self.sample_name}: Initial mothur complete\n')
+        logging.info(f'Initial mothur complete: Sample {self.sample_name}.')
 
     def _do_make_contigs(self):
         try:
             self.dss_att_holder.num_contigs = self.mothur_analysis_object.execute_make_contigs()
-            sys.stdout.write(
-                f'{self.sample_name}: data_set_sample_instance_in_q.num_contigs = {self.dss_att_holder.num_contigs}\n')
+            logging.info(
+                f'{self.sample_name}: data_set_sample_instance_in_q.num_contigs = {self.dss_att_holder.num_contigs}.')
 
         except RuntimeError as e:
             if str(e) == 'bad fastq, mothur stuck in loop':
@@ -2155,9 +2160,10 @@ class InitialMothurWorker:
 
         number_of_contig_seqs_unique = len(name_file)
         self.dss_att_holder.post_qc_unique_num_seqs = number_of_contig_seqs_unique
-        sys.stdout.write(
+        logging.info(
             f'{self.sample_name}: '
-            f'data_set_sample_instance_in_q.post_qc_unique_num_seqs = {number_of_contig_seqs_unique}\n')
+            f'data_set_sample_instance_in_q.post_qc_unique_num_seqs = {number_of_contig_seqs_unique}.'
+        )
 
         abs_count = 0
         for line in name_file:
@@ -2165,8 +2171,8 @@ class InitialMothurWorker:
 
         self.dss_att_holder.post_qc_absolute_num_seqs = abs_count
 
-        sys.stdout.write(
-            f'{self.sample_name}: data_set_sample_instance_in_q.post_qc_absolute_num_seqs = {abs_count}\n')
+        logging.info(
+            f'{self.sample_name}: data_set_sample_instance_in_q.post_qc_absolute_num_seqs = {abs_count}.')
 
     def check_for_error_and_raise_runtime_error(self, stage_of_qc, error_summary=None):
         if error_summary:
@@ -2176,8 +2182,7 @@ class InitialMothurWorker:
                 )
                 raise RuntimeError({'sample_name': self.sample_name})
         for stdout_line in self.thread_safe_general.decode_utf8_binary_to_list(
-                self.mothur_analysis_object.latest_completed_process_command.stdout
-        ):
+                self.mothur_analysis_object.latest_completed_process_command.stdout):
             if '[WARNING]: Blank fasta name, ignoring read.' in stdout_line:
                 self.log_qc_error_and_continue(errorreason=f'Blank fasta name during {stage_of_qc}')
                 raise RuntimeError({'sample_name': self.sample_name})
@@ -2244,7 +2249,7 @@ class PotentialSymTaxScreeningHandler:
         all_processes = []
         # http://stackoverflow.com/questions/8242837/django-multiprocessing-and-database-connections
         db.connections.close_all()
-        sys.stdout.write('\nPerforming potential sym tax screening QC\n')
+        logging.info(f'Performing potential sym tax screening QC.')
         for n in range(self.num_proc):
             if self.multiprocess:
                 p = Process(
@@ -2362,7 +2367,7 @@ class PotentialSymTaxScreeningWorker:
         self.lock = lock
 
     def execute_tax_screening(self):
-        sys.stdout.write(f'{self.sample_name}: verifying seqs are Symbiodinium and determining clade\n')
+        logging.info(f'{self.sample_name}: verifying seqs are Symbiodinium and determining clade.')
 
         blastn_analysis = BlastnAnalysis(
             input_file_path=self.fasta_file_path,
@@ -2374,7 +2379,7 @@ class PotentialSymTaxScreeningWorker:
         else:
             blastn_analysis.execute_blastn_analysis(pipe_stdout_sterr=True)
 
-        sys.stdout.write(f'{self.sample_name}: BLAST complete\n')
+        logging.info(f'BLAST complete: Sample {self.sample_name}.')
 
         self.blast_output_as_list = blastn_analysis.return_blast_output_as_list()
 

@@ -5,6 +5,11 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 import os
 
+# Configure logging
+import logging
+from logging.handlers import RotatingFileHandler
+
+
 db_user = os.environ.get('POSTGRES_USER')
 db_password = os.environ.get('POSTGRES_PASSWORD')
 db_host = os.environ.get('SYMPORTAL_DATABASE_CONTAINER')  # Use the service name as the hostname when accessing containers within the same network
@@ -22,5 +27,13 @@ db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 login = LoginManager(app)
 login.login_view = 'login'
+
+# Configure logging
+handler = RotatingFileHandler(app.config['LOG_FILE'], maxBytes=100000, backupCount=5)
+handler.setLevel(app.config['LOG_LEVEL'])
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
+app.logger.setLevel(app.config['LOG_LEVEL'])
 
 from sp_app import routes, models

@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 import subprocess
 import os
@@ -176,7 +177,7 @@ class MothurAnalysis:
 
         self._pcr_make_and_write_mothur_batch_file()
 
-        print(f'{self.name}: starting fwd PCR. This may take some time.')
+        logging.info(f'Starting fwd PCR for Sample: {self.name}. This may take some time.')
         # Mothur now automatically removes seqs from the name file
         # This is a problem here, as we were relying on the name file not being
         # To fix this we wil asign a variable to the names file at this point in time
@@ -204,7 +205,7 @@ class MothurAnalysis:
             self._run_mothur_batch_file_command()
             self.fasta_path = self.fasta_path.replace('.fasta', '.rc.fasta')
             self._pcr_make_and_write_mothur_batch_file()
-            print(f'{self.name}: starting rev PCR. This may take some time.')
+            logging.info(f'Starting rev PCR for Sample: {self.name}. This may take some time.')
             self._run_mothur_batch_file_command()
             rev_output_good_fasta_path = self.fasta_path.replace('.fasta', '.pcr.fasta')
             self.remove_primer_mismatch_annotations_from_fasta(rev_output_good_fasta_path)
@@ -220,7 +221,9 @@ class MothurAnalysis:
         else:
             self.fasta_path = fwd_output_good_fasta_path
         if len(self.thread_safe_general.read_defined_file_to_list(self.fasta_path)) == 0:
-            raise RuntimeError('PCR fasta file is blank')
+            error_message = 'PCR fasta file is blank.'
+            logging.error(error_message)
+            raise RuntimeError(error_message)
 
 
     def remove_primer_mismatch_annotations_from_fasta(self, fasta_path):

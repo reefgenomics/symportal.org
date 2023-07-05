@@ -1,6 +1,9 @@
 # Base image
 FROM python:3.9
 
+# Install SSH client
+RUN apt-get update && apt-get install -y openssh-client cron
+
 # Set working directory
 WORKDIR /app
 
@@ -16,6 +19,7 @@ COPY . .
 # Set environment variables
 ENV FLASK_APP=sp_app:app
 ENV FLASK_RUN_HOST=0.0.0.0
+ENV PYTHONPATH=/app
 
 # Expose the Flask app port
 EXPOSE 5000

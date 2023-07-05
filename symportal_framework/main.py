@@ -24,6 +24,7 @@ __version__ = '0.3.22'
 
 # Django specific settings
 import os
+import logging
 from datetime import datetime
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.conf import settings
@@ -68,7 +69,7 @@ class SymPortalWorkFlowManager:
         self.symportal_root_directory = os.path.abspath(os.path.dirname(__file__))
         self.dbbackup_dir = os.path.join(self.symportal_root_directory, 'dbBackUp')
         os.makedirs(self.dbbackup_dir, exist_ok=True)
-        self.date_time_str = str(datetime.utcnow()).split('.')[0].replace('-','').replace(' ','T').replace(':','')
+        self.date_time_str = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
         self.submitting_user = sp_config.user_name
         self.submitting_user_email = sp_config.user_email
         self.number_of_samples = None
@@ -326,6 +327,7 @@ class SymPortalWorkFlowManager:
 
     def start_work_flow(self):
         if self.args.load:
+
             self.perform_data_loading()
         elif self.args.analyse:
             self._perform_data_analysis()
@@ -682,6 +684,7 @@ class SymPortalWorkFlowManager:
         self.output_type_count_table_obj.output_types()
 
     def create_new_data_analysis_obj(self):
+        logging.info(f'Creating a new DataAnalysis object: {self.args.name}.')
         self.data_analysis_object = DataAnalysis(
             list_of_data_set_uids=self.args.analyse, within_clade_cutoff=self.within_clade_cutoff,
             name=self.args.name, time_stamp=self.date_time_str,
