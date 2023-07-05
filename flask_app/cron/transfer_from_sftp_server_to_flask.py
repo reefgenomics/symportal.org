@@ -64,12 +64,17 @@ class SFTPClient:
 
         with open(os.path.join(self.local_path, submission.name) + '.md5sum', 'r') as file:
             md5sum = file.read()
+            logging.info(
+                f'Expected MD5 checksum of the {os.path.join(self.local_path, submission.name) + ".zip"} archive '
+                f'is {md5sum}.')
 
         md5_hash = hashlib.md5()
         with open(os.path.join(self.local_path, submission.name) + '.zip', 'rb') as file:
             for chunk in iter(lambda: file.read(4096), b''):
                 md5_hash.update(chunk)
         actual_md5sum = md5_hash.hexdigest()
+        logging.info(f'Actual MD5 checksum of the {os.path.join(self.local_path, submission.name) + ".zip"} archive '
+                     f'is {actual_md5sum}.')
         if actual_md5sum == md5sum:
             logging.info('MD5 checksum matches!')
         else:
@@ -79,10 +84,8 @@ class SFTPClient:
                 f'    Actual MD5 checksum: {actual_md5sum}.')
 
 
-
     def unzip_archive(self, archive_path, destination_dir):
-        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-            zip_ref.extractall(destination_dir)
+        shutil.unpack_archive(archive_path, destination_dir)
         shutil.move(
             os.path.join(destination_dir, 'html', 'study_data.js'),
             os.path.join(destination_dir, 'study_data.js'))

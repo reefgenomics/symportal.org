@@ -73,8 +73,9 @@ class SFTPClient:
             for root, _, files in os.walk(folder_path):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    zipf.write(file_path,
-                               os.path.relpath(file_path, folder_path))
+                    if file_path != output_path:
+                        zipf.write(file_path,
+                                   os.path.relpath(file_path, folder_path))
         logging.info(
             f'Folder {folder_path} zipped to {output_path} successfully.')
 
