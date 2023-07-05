@@ -40,5 +40,8 @@ COPY . .
 ENV PYTHONPATH=/app
 ENV DJANGO_SETTINGS_MODULE=settings
 
+# Set up proper permissions for logrotate configuration file
+RUN chmod 0644 /etc/logrotate.d/symportal.logrotate
+
 # Run your application
 CMD ["bash"]
