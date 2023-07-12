@@ -4,6 +4,9 @@ services:
 
   database:
     image: postgres:15.3
+    deploy:
+      placement:
+        constraints: [ node.hostname == ${ZYGOTE_HOST} ]
     ports:
       - "5433:5432"
     environment:
@@ -16,6 +19,9 @@ services:
   flask-app:
     build:
       context: ./flask_app
+    deploy:
+      placement:
+        constraints: [ node.hostname == ${LINODE_HOST} ]
     ports:
       - "5000:5000"
     environment:
@@ -36,6 +42,9 @@ services:
   nginx:
     build:
       context: ./nginx
+    deploy:
+      placement:
+        constraints: [ node.hostname == ${LINODE_HOST} ]
     ports:
       - "80:80"
       - "443:443"
@@ -50,6 +59,9 @@ services:
   symportal-framework:
     build:
       context: ./symportal_framework
+    deploy:
+      placement:
+        constraints: [ node.hostname == ${ZYGOTE_HOST} ]
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -69,6 +81,9 @@ services:
 
   sftp-server:
     image: atmoz/sftp
+    deploy:
+      placement:
+        constraints: [ node.hostname == ${ZYGOTE_HOST} ]
     ports:
       - "2222:22"
     environment:
