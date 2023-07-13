@@ -88,7 +88,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == worker
+          - node.role == manager
     ports:
       - "2222:22"
     environment:
