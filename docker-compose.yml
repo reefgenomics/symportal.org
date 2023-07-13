@@ -5,9 +5,11 @@ services:
   database:
     image: postgres:15.3
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
-          - node.hostname == ${ZYGOTE_HOST}
+          - node.role == manager
     ports:
       - "5433:5432"
     environment:
@@ -15,15 +17,15 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     restart: always
-    container_name: ${SYMPORTAL_DATABASE_CONTAINER}
 
   flask-app:
-    build:
-      context: ./flask_app
+    image: greenjune/symportal-kitchen:flask-app
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
-          - node.hostname == ${LINODE_HOST}
+          - node.role == worker
     ports:
       - "5000:5000"
     environment:
@@ -39,15 +41,17 @@ services:
       - SYMPORTAL_SFTP_SERVER_CONTAINER=${SYMPORTAL_SFTP_SERVER_CONTAINER}
     depends_on:
       - database
-    container_name: ${SYMPORTAL_FLASK_CONTAINER}
+    env_file:
+      - .env
 
   nginx:
-    build:
-      context: ./nginx
+    image: greenjune/symportal-kitchen:nginx
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
-          - node.hostname == ${LINODE_HOST}
+          - node.role == worker
     ports:
       - "80:80"
       - "443:443"
@@ -57,15 +61,17 @@ services:
       - /etc/ssl/symportal:/etc/nginx/certs:ro
     depends_on:
       - flask-app
-    container_name: ${SYMPORTAL_NGINX_CONTAINER}
+    env_file:
+      - .env
 
   symportal-framework:
-    build:
-      context: ./symportal_framework
+    image: greenjune/symportal-kitchen:symportal-framework
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
-          - node.hostname == ${ZYGOTE_HOST}
+          - node.role == manager
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -81,16 +87,14 @@ services:
       - database
     volumes:
       - /mnt:/mnt
-    container_name: ${SYMPORTAL_FRAMEWORK_CONTAINER}
 
   sftp-server:
     image: atmoz/sftp
     deploy:
       placement:
         constraints:
-          - node.hostname == ${ZYGOTE_HOST}
+          - node.role == worker
     ports:
       - "2222:22"
     environment:
       - SFTP_USERS=${SFTP_USERNAME}:${SFTP_PASSWORD}:${SFTP_UID}:${SFTP_GID}:${SFTP_HOME}
-    container_name: ${SYMPORTAL_SFTP_SERVER_CONTAINER}
