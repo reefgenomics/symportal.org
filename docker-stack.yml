@@ -52,8 +52,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      - SYMPORTAL_FLASK_CONTAINER=${SYMPORTAL_FLASK_CONTAINER}
     volumes:
       - /etc/letsencrypt/live/symportal.org:/etc/nginx/certs:ro
     depends_on:
