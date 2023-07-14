@@ -6,4 +6,4 @@ sleep 15
 
 # Deploy
 export $(xargs < .env)
-docker stack deploy --compose-file docker-compose.yml symportal
+docker stack deploy --compose-file docker-stack.yml symportal
