@@ -16,14 +16,17 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
-    command: >
-      psql -U postgres \
-           -c "DROP SCHEMA public CASCADE; \
-               CREATE SCHEMA public; \
-               GRANT ALL ON SCHEMA public TO postgres; \
-               GRANT ALL ON SCHEMA public TO public; \
-               DROP DATABASE postgres;"
-      psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} < ./database/postgres_dump_after.sql
+
+  sftp-server:
+    image: atmoz/sftp
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    ports:
+      - "2222:22"
+    environment:
+      - SFTP_USERS=${SFTP_USERNAME}:${SFTP_PASSWORD}:${SFTP_UID}:${SFTP_GID}:${SFTP_HOME}
 
   flask-app:
     image: greenjune/symportal-kitchen:flask-app
@@ -49,22 +52,6 @@ services:
     depends_on:
       - database
 
-  nginx:
-    image: greenjune/symportal-kitchen:nginx
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /etc/ssl/symportal:/etc/nginx/certs:ro
-    depends_on:
-      - flask-app
-
   symportal-framework:
     image: greenjune/symportal-kitchen:symportal-framework
     deploy:
@@ -89,13 +76,18 @@ services:
     volumes:
       - /mnt:/mnt
 
-  sftp-server:
-    image: atmoz/sftp
+  nginx:
+    image: greenjune/symportal-kitchen:nginx
     deploy:
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.role == manager
     ports:
-      - "2222:22"
-    environment:
-      - SFTP_USERS=${SFTP_USERNAME}:${SFTP_PASSWORD}:${SFTP_UID}:${SFTP_GID}:${SFTP_HOME}
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/ssl/symportal:/etc/nginx/certs:ro
+    depends_on:
+      - flask-app
