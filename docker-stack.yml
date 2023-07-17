@@ -16,6 +16,14 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+    command: >
+      psql -U postgres \
+           -c "DROP SCHEMA public CASCADE; \
+               CREATE SCHEMA public; \
+               GRANT ALL ON SCHEMA public TO postgres; \
+               GRANT ALL ON SCHEMA public TO public; \
+               DROP DATABASE postgres;"
+      psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} < ./database/postgres_dump_after.sql
 
   flask-app:
     image: greenjune/symportal-kitchen:flask-app
@@ -24,7 +32,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == worker
+          - node.role == manager
     ports:
       - "5000:5000"
     environment:
@@ -48,12 +56,12 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == worker
+          - node.role == manager
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /root/certs:/etc/nginx/certs:ro
+      - /etc/ssl/symportal:/etc/nginx/certs:ro
     depends_on:
       - flask-app
 
