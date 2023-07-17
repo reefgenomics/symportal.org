@@ -3,9 +3,9 @@ import os
 import sys
 import shutil
 import hashlib
-import zipfile
 import logging
 import paramiko
+from datetime import datetime
 
 from sp_app import db
 from sp_app.models import Submission
@@ -83,13 +83,23 @@ class SFTPClient:
                 f'    Expected MD5 checksum: {md5sum}.\n'
                 f'    Actual MD5 checksum: {actual_md5sum}.')
 
-
     def unzip_archive(self, archive_path, destination_dir):
         shutil.unpack_archive(archive_path, destination_dir)
         shutil.move(
             os.path.join(destination_dir, 'html', 'study_data.js'),
             os.path.join(destination_dir, 'study_data.js'))
         logging.info(f'Extracting files from the archive to {destination_dir}.')
+
+    def update_submission_status(self, submission_name):
+        s = Submission.query.filter(
+            Submission.name == submission_name).one()
+        s.study.display_online = True
+        s.study.data_explorer = True
+        s.progress_status = 'transfer_to_web_server_complete'
+        s.transfer_to_web_server_date_time = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+        db.session.commit()
+        logging.info(
+            f'The submission status has been updated to {s.progress_status}.')
 
 
 def get_submissions_to_transfer(status):
@@ -146,6 +156,7 @@ if __name__ == '__main__':
             sftp_client.copy_analysis_output()
             sftp_client.md5sum_check()
             sftp_client.unzip_archive(f'{sftp_client.local_path}/{submission.name}.zip', sftp_client.local_path)
+            sftp_client.update_submission_status(submission.name)
         finally:
             sftp_client.disconnect()
 
