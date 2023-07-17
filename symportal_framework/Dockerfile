@@ -44,11 +44,6 @@ COPY . .
 ENV PYTHONPATH=/app
 ENV DJANGO_SETTINGS_MODULE=settings
 
-# Set up cron jobs
-RUN env >> /etc/environment && \
-    service cron start && \
-    crontab /app/cron/crontab
-
 # Set up proper permissions for logrotate configuration file
 RUN chmod 0644 /etc/logrotate.d/symportal.logrotate
 

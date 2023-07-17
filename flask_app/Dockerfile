@@ -30,11 +30,6 @@ ENV PYTHONPATH=/app
 # Expose the Flask app port
 EXPOSE 5000
 
-# Set up cron jobs
-RUN env >> /etc/environment && \
-    service cron start && \
-    crontab /app/cron/crontab
-
 # Set up proper permissions for logrotate configuration file
 RUN chmod 0644 /etc/logrotate.d/symportal.logrotate
 
