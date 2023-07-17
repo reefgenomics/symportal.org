@@ -2,7 +2,11 @@
 FROM continuumio/miniconda3:23.3.1-0
 
 # Install SSH client
-RUN apt-get update && apt-get install -y openssh-client cron logrotate
+RUN apt-get update && \
+    apt-get install -y \
+        openssh-client \
+        cron \
+        logrotate
 
 # Set working directory
 WORKDIR /app
@@ -39,6 +43,11 @@ COPY . .
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV DJANGO_SETTINGS_MODULE=settings
+
+# Set up cron jobs
+RUN env >> /etc/environment && \
+    service cron start && \
+    crontab /app/cron/crontab
 
 # Set up proper permissions for logrotate configuration file
 RUN chmod 0644 /etc/logrotate.d/symportal.logrotate
