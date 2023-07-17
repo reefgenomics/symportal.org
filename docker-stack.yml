@@ -61,7 +61,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /root/certs:/etc/nginx/certs:ro
+      - /etc/ssl/symportal:/etc/nginx/certs:ro
     depends_on:
       - flask-app
 
