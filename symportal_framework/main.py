@@ -21,16 +21,17 @@
     """
 __version__ = '0.3.22'
 
-
 # Django specific settings
 import os
 import logging
 from datetime import datetime
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 from django.conf import settings
 # ####### Setup Django DB and Models ########
 # Ensure settings are read
 from django.core.wsgi import get_wsgi_application
+
 application = get_wsgi_application()
 # Your application specific imports
 from dbApp.models import DataSet, DataAnalysis, DataSetSample, Study, User, Citation
@@ -44,6 +45,7 @@ import distance
 import argparse
 import data_loading
 import sp_config
+
 if sp_config.system_type == 'remote':
     import textdistance
     from bs4 import BeautifulSoup
@@ -59,6 +61,7 @@ import subprocess
 import json
 from django.core.exceptions import ObjectDoesNotExist
 import logging
+
 
 class SymPortalWorkFlowManager:
     def __init__(self, custom_args_list=None):
@@ -120,10 +123,14 @@ class SymPortalWorkFlowManager:
         # Then we want to filter these ids for only those that exist
         last_uids = [ds.id for ds in DataSet.objects.filter(id__in=last_uids)]
         new_uids = [int(_) for _ in self.args.analyse_next.split(',')]
+
         if len(set(last_uids).intersection(set(new_uids))) != 0:
-            raise RuntimeError("There appears to be overlap in the uids being provided to the --analyse_next argument "
-                               "and the uids provided to the previous "
-                               f"analysis:\n\tnew = {new_uids}\n\tlast = {last_uids}")
+            logging.warning("There appears to be overlap in the uids being provided to the --analyse_next argument "
+                            "and the uids provided to the previous "
+                            f"analysis:\n\tnew = {new_uids}\n\tlast = {last_uids}")
+            new_uids = [uid for uid in new_uids if uid not in last_uids]
+            logging.info(f'Skip conflicting uids. New uids are {new_uids}')
+
         last_uids.extend(new_uids)
         new_uid_css = ','.join([str(_) for _ in last_uids])
         self.args.analyse = new_uid_css
@@ -211,6 +218,7 @@ class SymPortalWorkFlowManager:
                 help='Only for use when running as remote\nallows the association of a '
                      'different user_email to the data_set '
                      'than the one listed in sp_config', default='not supplied')
+
     @staticmethod
     def _define_mutually_exclusive_args(group):
         group.add_argument(
@@ -255,7 +263,8 @@ class SymPortalWorkFlowManager:
                  'The input to this function should be a comma separated string of '
                  'the UIDs of the DataSetSample instances '
                  'in question. e.g. 345,346,347,348')
-        group.add_argument('--update_citations', help='Check for new articles citing the SymPortal MS.', action='store_true')
+        group.add_argument('--update_citations', help='Check for new articles citing the SymPortal MS.',
+                           action='store_true')
         if sp_config.system_type == 'local':
             group.add_argument(
                 '--print_output_types', metavar='DataSet UIDs, DataAnalysis UID',
@@ -288,7 +297,7 @@ class SymPortalWorkFlowManager:
                      'Give the ID of the analysis you wish to '
                      'output the Study from using the --data_analysis_id flag.', )
             group.add_argument(
-            '--display_studies', action='store_true', help='Display studies currently in the framework\'s database')
+                '--display_studies', action='store_true', help='Display studies currently in the framework\'s database')
         else:
             raise NotImplementedError
         group.add_argument(
@@ -704,14 +713,14 @@ class SymPortalWorkFlowManager:
     def _execute_data_loading(self):
         if sp_config.system_type == 'remote' and self.args.is_cron_loading:
             self.data_loading_object = data_loading.DataLoading(
-                    parent_work_flow_obj=self, datasheet_path=self.args.data_sheet, user_input_path=self.args.load,
-                    screen_sub_evalue=self.screen_sub_eval_bool, num_proc=self.args.num_proc, no_fig=self.args.no_figures,
-                    no_ord=self.args.no_ordinations, no_output=self.args.no_output,
-                    distance_method=self.args.distance_method,
-                    no_pre_med_seqs=self.args.no_pre_med_seqs, debug=self.args.debug, multiprocess=self.args.multiprocess,
-                    start_time=self.start_time, date_time_str=self.date_time_str,
-                    is_cron_loading=True,
-                    study_name=self.args.study_name, study_user_string=self.args.study_user_string)
+                parent_work_flow_obj=self, datasheet_path=self.args.data_sheet, user_input_path=self.args.load,
+                screen_sub_evalue=self.screen_sub_eval_bool, num_proc=self.args.num_proc, no_fig=self.args.no_figures,
+                no_ord=self.args.no_ordinations, no_output=self.args.no_output,
+                distance_method=self.args.distance_method,
+                no_pre_med_seqs=self.args.no_pre_med_seqs, debug=self.args.debug, multiprocess=self.args.multiprocess,
+                start_time=self.start_time, date_time_str=self.date_time_str,
+                is_cron_loading=True,
+                study_name=self.args.study_name, study_user_string=self.args.study_user_string)
         else:
             self.data_loading_object = data_loading.DataLoading(
                 parent_work_flow_obj=self, datasheet_path=self.args.data_sheet, user_input_path=self.args.load,
@@ -721,7 +730,7 @@ class SymPortalWorkFlowManager:
                 no_pre_med_seqs=self.args.no_pre_med_seqs, debug=self.args.debug, multiprocess=self.args.multiprocess,
                 start_time=self.start_time, date_time_str=self.date_time_str,
                 is_cron_loading=False)
-        
+
         self.data_loading_object.load_data()
 
     def _verify_name_arg_given_load(self):
@@ -824,7 +833,7 @@ class SymPortalWorkFlowManager:
                         sys.stdout.write(f'\n\nGenerating between sample distance plot clade {clade_of_output}\n')
                         try:
                             dist_scatter_plotter_samples = plotting.DistScatterPlotterSamples(csv_path=output_path,
-                                                                                     date_time_str=self.date_time_str)
+                                                                                              date_time_str=self.date_time_str)
                             dist_scatter_plotter_samples.make_sample_dist_scatter_plot()
                         except RuntimeError:
                             # The error message is printed to stdout at the source
@@ -865,7 +874,7 @@ class SymPortalWorkFlowManager:
         # Then run print_output_types_sample_set based on the data_set_samples attribute of the study
 
         self.study = self._try_to_get_study_object()
-        
+
         # set the data_analysis attribute of the Study
         self._set_data_analysis_obj_from_arg_analysis_uid()
         self.study.data_analysis = self.data_analysis_object
@@ -875,7 +884,6 @@ class SymPortalWorkFlowManager:
 
         # Now rejoin the logic flow for performing a type output as though it were a normal type output
         self.perform_stand_alone_type_output()
-
 
     def _try_to_get_study_object(self):
         try:
@@ -921,7 +929,7 @@ class SymPortalWorkFlowManager:
         Produce the study_output_info.json file in the output directory
         and produce a .bak in the dbBackup directory
         """
-        
+
         bak_path = os.path.join(self.dbbackup_dir, f'symportal_database_backup_{self.date_time_str}.bak')
         study_output_info_path = os.path.join(self.output_dir, 'study_output_info.json')
         # Now output the .json file
@@ -1047,7 +1055,7 @@ class SymPortalWorkFlowManager:
     def run_type_distances_dependent_on_methods(self):
         """Start an instance of the correct distance class running."""
         self.output_dir = os.path.join(
-                    self.symportal_root_directory, 'outputs', 'ordination', self.date_time_str)
+            self.symportal_root_directory, 'outputs', 'ordination', self.date_time_str)
         self._set_html_dir_and_js_out_path_from_output_dir()
         os.makedirs(self.html_dir, exist_ok=True)
         if self.args.distance_method == 'both':
@@ -1273,7 +1281,7 @@ class SymPortalWorkFlowManager:
             ds_in_q = data_set_id_to_obj_dict[ds_id]
             print(f'{ds_in_q.id}: {ds_in_q.name}\t{ds_in_q.time_stamp}')
 
-    @ staticmethod
+    @staticmethod
     def perform_display_studies():
         ordered_studies = Study.objects.order_by('id')
         for study in ordered_studies:
@@ -1297,6 +1305,7 @@ class SymPortalWorkFlowManager:
             filename=os.path.join(self.output_dir, f'{self.date_time_str}_log.log'),
             filemode='w', level=logging.INFO)
         logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
 
 class CitationUpdate:
     def __init__(self):
@@ -1345,7 +1354,7 @@ class CitationUpdate:
         # Find out how many pagntions of articles there are
         # And grab the articles for each page.
         pags = soup.find_all(class_='gs_nma')
-        assert(len(pags) != 0)
+        assert (len(pags) != 0)
         for pag in pags:
             if int(pag.text) != 1:
                 # Then we need to create a new soup
@@ -1357,7 +1366,7 @@ class CitationUpdate:
                 soup = BeautifulSoup(requests.get(full_url, headers=headers).text, features="html.parser")
 
             articles = soup.find_all('div', class_='gs_ri')
-            assert(len(articles) != 0)
+            assert (len(articles) != 0)
             year_re = re.compile('20\d{2}')
             for article_div in articles:
                 title = article_div.find('h3').find('a').text
@@ -1392,7 +1401,6 @@ class CitationUpdate:
 
                 if self._update_db_objs_and_verify_citation_association(citation=citation):
                     break
-
 
     def _update_db_objs_and_verify_citation_association(self, citation):
         # At this point we should have either a Study or citation object created
@@ -1501,4 +1509,3 @@ class CitationUpdate:
 if __name__ == "__main__":
     spwfm = SymPortalWorkFlowManager()
     spwfm.start_work_flow()
-
