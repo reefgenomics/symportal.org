@@ -29,7 +29,7 @@ docker compose exec database \
          DROP DATABASE postgres;"
 
 docker compose exec -T database psql \
-    -U postgres -d postgres < ./database/postgres_dump_after.sql
+    -U postgres -d postgres < ./database/backup.sql  # postgres_dump_after.sql
 echo "Done!"
 
 docker compose unpause nginx flask-app symportal-framework
