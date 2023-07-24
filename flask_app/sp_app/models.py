@@ -1,3 +1,4 @@
+import os
 from sp_app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -151,6 +152,7 @@ class SPUser(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
     has_upload_permission = db.Column(db.Boolean, default=False)
+    email = db.Column(db.String(100), default=os.getenv('CONTACT_EMAIL_ADDRESS'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -159,7 +161,7 @@ class SPUser(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f'<SPUser {self.name}>'
+        return f'< User: id {self.id}, name {self.name}, email {self.email} >'
 
 
 class Submission(db.Model):

@@ -172,7 +172,7 @@ class User(models.Model):
     email = models.CharField(max_length=100, default=os.getenv('CONTACT_EMAIL_ADDRESS'))
 
     def __str__(self):
-        return f'< User: id {self.id}, name {self.name}, email {self.email}'
+        return f'< User: id {self.id}, name {self.name}, email {self.email} >'
 
     def __repr__(self):
         return f'< User: id {self.id}, name {self.name}, email {self.email} >'
