@@ -25,6 +25,9 @@ SYMPORTAL_DATABASE_CONTAINER=symportal-database
 SYMPORTAL_FLASK_CONTAINER=symportal-flask
 SYMPORTAL_NGINX_CONTAINER=symportal-nginx
 SYMPORTAL_FRAMEWORK_CONTAINER=symportal-framework
+
+SENDGRID_API_KEY=''
+SENDGRID_EMAIL_SENDER=''
 ```
 
 ### Build the project

@@ -20,6 +20,9 @@ import stat
 from sqlalchemy import or_
 import warnings
 
+# for mailing feature
+from symportal_kitchen.email_notifications.submission_status import send_email
+
 # As we start to work with the remote database we will want to minimise calls to it.
 # As such we will make an initial call to get all studies
 # We have specified some lazy='joined' calls in the models.py file so that
@@ -671,6 +674,11 @@ def _check_submission():
                     )
                     db.session.add(new_submission)
                     db.session.commit()
+
+                    # notify user or admin that submission was created
+                    send_email(to_email=sp_user.emal,
+                               submission_status=new_submission.progress_status,
+                               recipient_name=sp_user.name)
 
                     # TODO if for_analysis is False then report this in the message here
                     # Return a completed response
