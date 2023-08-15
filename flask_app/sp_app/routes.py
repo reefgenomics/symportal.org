@@ -676,7 +676,7 @@ def _check_submission():
                     db.session.commit()
 
                     # notify user or admin that submission was created
-                    send_email(to_email=sp_user.emal,
+                    send_email(to_email=sp_user.email,
                                submission_status=new_submission.progress_status,
                                recipient_name=sp_user.name)
 
