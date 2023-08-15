@@ -220,8 +220,9 @@ class MothurAnalysis:
             )
         else:
             self.fasta_path = fwd_output_good_fasta_path
+
         if len(self.thread_safe_general.read_defined_file_to_list(self.fasta_path)) == 0:
-            error_message = 'PCR fasta file is blank.'
+            error_message = f'PCR fasta file is blank: {self.fasta_path}.'
             logging.error(error_message)
             raise RuntimeError(error_message)
 
