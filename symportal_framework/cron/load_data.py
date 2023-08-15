@@ -8,7 +8,10 @@ from datetime import datetime
 django.setup()
 # Import from installed Apps
 import main
-from dbApp.models import Submission
+from dbApp.models import Submission, User
+
+from symportal_kitchen.db_queries.db_queries import get_user_by_id
+from symportal_kitchen.email_notifications.submission_status import send_email
 
 # Configure logging
 logging.basicConfig(
@@ -112,11 +115,24 @@ def load_submission(submission):
     )
     try:
         logging.info('Starting the workflow.')
+        user = get_user_by_id(User, submission.submitting_user_id)
+
+        # notify user by email that data loading has been started
+        send_email(to_email=user.email,
+                   submission_status=submission.progress_status,
+                   recipient_name=user.name)
+
         data_loader.workflow_manager.start_work_flow()
         submission.loading_started_date_time = data_loader.workflow_manager.date_time_str
         data_loader.update_submission(submission)
         logging.info(
             f'Data loading is complete for the {submission.name} submission object.')
+
+        # notify user by email that data loading has been completed
+        send_email(to_email=user.email,
+                   submission_status=submission.progress_status,
+                   recipient_name=user.name)
+
     except Exception as e:
         submission.error_has_occured = True
         error_message = f'An error has occured while trying to load the ' \
