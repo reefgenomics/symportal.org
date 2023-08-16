@@ -69,6 +69,7 @@ services:
       - database
     volumes:
       - /mnt:/mnt
+      - /mnt/symbiodiniaceaeDB:/app/symbiodiniaceaeDB
     container_name: ${SYMPORTAL_FRAMEWORK_CONTAINER}
 
   sftp-server:
