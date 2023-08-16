@@ -33,6 +33,8 @@ services:
       - SYMPORTAL_SFTP_SERVER_CONTAINER=${SYMPORTAL_SFTP_SERVER_CONTAINER}
     depends_on:
       - database
+    volumes:
+      - /mnt/explorer_data:/app/sp_app/explorer_data
     container_name: ${SYMPORTAL_FLASK_CONTAINER}
 
   nginx:
