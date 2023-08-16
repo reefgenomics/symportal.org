@@ -7,7 +7,7 @@ import logging
 import paramiko
 from datetime import datetime
 
-from sp_app import db
+from sp_app import app, db
 from sp_app.models import Submission, SPUser
 from transfer_from_flask_app_to_sftp_server import generate_lock_file, lock_file_exists, remove_lock_file
 
@@ -94,23 +94,26 @@ class SFTPClient:
         logging.info(f'Extracting files from the archive to {destination_dir}.')
 
     def update_submission_status(self, submission_name):
-        s = Submission.query.filter(
-            Submission.name == submission_name).one()
-        s.study.display_online = True
-        s.study.data_explorer = True
-        s.progress_status = 'transfer_to_web_server_complete'
-        s.transfer_to_web_server_date_time = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
-        db.session.commit()
-        logging.info(
-            f'The submission status has been updated to {s.progress_status}.')
+        with app.app_context():
+            s = Submission.query.filter(
+                Submission.name == submission_name).one()
+            s.study.display_online = True
+            s.study.data_explorer = True
+            s.progress_status = 'transfer_to_web_server_complete'
+            s.transfer_to_web_server_date_time = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+            db.session.commit()
+            logging.info(
+                f'The submission status has been updated to {s.progress_status}.')
 
 
 def get_submissions_to_transfer(status):
+    with app.app_context():
+        submissions = Submission.query. \
+            filter(Submission.progress_status == status). \
+            filter(Submission.error_has_occured == False). \
+            all()
     # Return QuerySet
-    return Submission.query. \
-        filter(Submission.progress_status == status). \
-        filter(Submission.error_has_occured == False). \
-        all()
+    return submissions
 
 
 def select_submission(submissions):

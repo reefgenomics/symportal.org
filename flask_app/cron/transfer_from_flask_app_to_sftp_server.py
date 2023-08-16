@@ -7,7 +7,7 @@ import hashlib
 import logging
 import paramiko
 
-from sp_app import db
+from sp_app import app, db
 from sp_app.models import Submission
 
 # Configure logging
@@ -135,12 +135,13 @@ class SFTPClient:
         return True
 
     def update_submission_status(self):
-        s = Submission.query.filter(
-            Submission.name == self.submission_name).one()
-        s.progress_status = 'transfer_to_sftp_server_complete'
-        db.session.commit()
-        logging.info(
-            f'The submission status has been updated to {s.progress_status}.')
+        with app.app_context():
+            s = Submission.query.filter(
+                Submission.name == self.submission_name).one()
+            s.progress_status = 'transfer_to_sftp_server_complete'
+            db.session.commit()
+            logging.info(
+                f'The submission status has been updated to {s.progress_status}.')
 
     def delete_local_submission(self):
         try:
