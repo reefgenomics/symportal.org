@@ -61,7 +61,7 @@ def remove_lock_file(filepath):
 
 def lock_file_exists(filepath):
     if os.path.exists(filepath):
-        logging.debug(
+        logging.info(
             'Cron job process exists for the current script. Exiting.')
         return True
     else:
