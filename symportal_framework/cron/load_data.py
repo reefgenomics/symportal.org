@@ -10,6 +10,8 @@ django.setup()
 import main
 from dbApp.models import Submission, User
 
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
 from symportal_kitchen.db_queries.db_queries import get_user_by_id
 from symportal_kitchen.email_notifications.submission_status import send_email
 
@@ -42,30 +44,6 @@ class DataLoader:
         submission.save()
         logging.info(
             f'The status of submission {submission.name} has been changed to {submission.progress_status}.')
-
-
-def generate_lock_file(filepath):
-    with open(filepath, 'w') as file:
-        logging.debug(f'Lock file generated. Current process ID: {os.getpid()}')
-        return
-
-
-def remove_lock_file(filepath):
-    if os.path.isfile(filepath):
-        os.remove(filepath)
-        logging.debug(
-            f'The lock file {filepath} has been successfully removed.')
-    else:
-        logging.debug(f'File {filepath} does not exist.')
-
-
-def lock_file_exists(filepath):
-    if os.path.exists(filepath):
-        logging.info(
-            'Cron job process exists for the current script. Exiting.')
-        return True
-    else:
-        return False
 
 
 def check_incomplete_submissions():

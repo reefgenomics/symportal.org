@@ -5,9 +5,10 @@ import sys
 import logging
 import zipfile
 import paramiko
+
 # Lock file logic for one existing cron job
-from transfer_from_sftp_server_to_symportal_framework import generate_lock_file, \
-    lock_file_exists, remove_lock_file
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
 # For submission selections
 from transfer_from_sftp_server_to_symportal_framework import \
     get_submissions_to_transfer, select_submission
