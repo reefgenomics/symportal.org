@@ -10,6 +10,9 @@ import paramiko
 from sp_app import app, db
 from sp_app.models import Submission
 
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -153,29 +156,6 @@ class SFTPClient:
         except Exception as e:
             logging.error(
                 f'An error occurred while removing directory {self.local_path}: {e}')
-
-
-def generate_lock_file(filepath):
-    with open(filepath, 'w') as file:
-        logging.info(f'Lock file generated. Current process ID: {os.getpid()}')
-        return
-
-
-def remove_lock_file(filepath):
-    if os.path.isfile(filepath):
-        os.remove(filepath)
-        logging.info(
-            f'The lock file {filepath} has been successfully removed.')
-    else:
-        logging.info(f'File {filepath} does not exist.')
-
-
-def lock_file_exists(filepath):
-    if os.path.exists(filepath):
-        logging.info("Cron job process exists for the current script. Exiting.")
-        return True
-    else:
-        return False
 
 
 def get_submissions_to_transfer(base_dir):

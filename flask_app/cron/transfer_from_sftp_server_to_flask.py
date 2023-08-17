@@ -9,8 +9,9 @@ from datetime import datetime
 
 from sp_app import app, db
 from sp_app.models import Submission, SPUser
-from transfer_from_flask_app_to_sftp_server import generate_lock_file, lock_file_exists, remove_lock_file
 
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
 from symportal_kitchen.db_queries.db_queries import get_user_by_id
 from symportal_kitchen.email_notifications.submission_status import send_email
 
