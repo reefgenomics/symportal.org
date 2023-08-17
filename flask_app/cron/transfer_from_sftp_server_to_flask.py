@@ -164,10 +164,11 @@ if __name__ == '__main__':
             sftp_client.unzip_archive(f'{sftp_client.local_path}/{submission.name}.zip', sftp_client.local_path)
             sftp_client.update_submission_status(submission.name)
             # notify user by email that data loading has been started
-            user = get_user_by_id(SPUser, submission.submitting_user_id)
-            send_email(to_email=user.email,
-                       submission_status='analysis_ready_for_review',
-                       recipient_name=user.name)
+            with app.app_context():
+                user = get_user_by_id(SPUser, submission.submitting_user_id)
+                send_email(to_email=user.email,
+                           submission_status='analysis_ready_for_review',
+                           recipient_name=user.name)
         finally:
             sftp_client.disconnect()
 
