@@ -149,20 +149,24 @@ def get_study_data(study_name, file_path):
                 # Or the user is an admin and we should release the data
                 if filename == 'study_data.js':
                     print(f'returning {os.path.join(file_dir, filename)}')
-                    return send_from_directory(directory=file_dir, filename=filename)
+                    return send_from_directory(directory=file_dir,
+                                               path=filename)
                 else:
                     print(f'returning {os.path.join(file_dir, filename)}')
-                    return send_from_directory(directory=file_dir, filename=filename, as_attachment=True)
+                    return send_from_directory(directory=file_dir,
+                                               path=filename,
+                                               as_attachment=True)
             else:
                 return redirect(url_for('index'))
     else:
         # Study is published
         if filename == 'study_data.js':
             print(f'returning {os.path.join(file_dir, filename)}')
-            return send_from_directory(directory=file_dir, filename=filename)
+            return send_from_directory(directory=file_dir, path=filename)
         else:
             print(f'returning {os.path.join(file_dir, filename)}')
-            return send_from_directory(directory=file_dir, filename=filename, as_attachment=True)
+            return send_from_directory(directory=file_dir, path=filename,
+                                       as_attachment=True)
 
 @app.route('/submit_data_learn_more')
 def submit_data_learn_more():
