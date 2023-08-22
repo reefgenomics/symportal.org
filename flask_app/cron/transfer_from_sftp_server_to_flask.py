@@ -7,9 +7,13 @@ import logging
 import paramiko
 from datetime import datetime
 
-from sp_app import db
-from sp_app.models import Submission
-from transfer_from_flask_app_to_sftp_server import generate_lock_file, lock_file_exists, remove_lock_file
+from sp_app import app, db
+from sp_app.models import Submission, SPUser
+
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
+from symportal_kitchen.db_queries.db_queries import get_user_by_id
+from symportal_kitchen.email_notifications.submission_status import send_email
 
 # Configure logging
 logging.basicConfig(
@@ -91,23 +95,26 @@ class SFTPClient:
         logging.info(f'Extracting files from the archive to {destination_dir}.')
 
     def update_submission_status(self, submission_name):
-        s = Submission.query.filter(
-            Submission.name == submission_name).one()
-        s.study.display_online = True
-        s.study.data_explorer = True
-        s.progress_status = 'transfer_to_web_server_complete'
-        s.transfer_to_web_server_date_time = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
-        db.session.commit()
-        logging.info(
-            f'The submission status has been updated to {s.progress_status}.')
+        with app.app_context():
+            s = Submission.query.filter(
+                Submission.name == submission_name).one()
+            s.study.display_online = True
+            s.study.data_explorer = True
+            s.progress_status = 'transfer_to_web_server_complete'
+            s.transfer_to_web_server_date_time = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
+            db.session.commit()
+            logging.info(
+                f'The submission status has been updated to {s.progress_status}.')
 
 
 def get_submissions_to_transfer(status):
+    with app.app_context():
+        submissions = Submission.query. \
+            filter(Submission.progress_status == status). \
+            filter(Submission.error_has_occured == False). \
+            all()
     # Return QuerySet
-    return Submission.query. \
-        filter(Submission.progress_status == status). \
-        filter(Submission.error_has_occured == False). \
-        all()
+    return submissions
 
 
 def select_submission(submissions):
@@ -157,6 +164,12 @@ if __name__ == '__main__':
             sftp_client.md5sum_check()
             sftp_client.unzip_archive(f'{sftp_client.local_path}/{submission.name}.zip', sftp_client.local_path)
             sftp_client.update_submission_status(submission.name)
+            # notify user by email that data loading has been started
+            with app.app_context():
+                user = get_user_by_id(SPUser, submission.submitting_user_id)
+                send_email(to_email=user.email,
+                           submission_status='analysis_ready_for_review',
+                           recipient_name=user.name)
         finally:
             sftp_client.disconnect()
 

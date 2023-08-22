@@ -1,4 +1,5 @@
 from django.db import models
+import os
 import json
 import general
 from datetime import datetime
@@ -168,12 +169,15 @@ class User(models.Model):
     password_hash = models.CharField(max_length=200, null=True)
     is_admin = models.BooleanField(default=False)
     has_upload_permission = models.BooleanField(default=False)
+    # in the models it is not good practice to set up the default value as env variable
+    # that is why we hardcode the default email address
+    email = models.CharField(max_length=100, default='yulia.iakovleva@uni-konstanz.de')
 
     def __str__(self):
-        return f'< User: id {self.id}, name {self.name} >'
+        return f'< User: id {self.id}, name {self.name}, email {self.email} >'
 
     def __repr__(self):
-        return f'< User: id {self.id}, name {self.name} >'
+        return f'< User: id {self.id}, name {self.name}, email {self.email} >'
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

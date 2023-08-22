@@ -4,7 +4,8 @@ import django
 import logging
 from datetime import datetime
 
-from load_data import generate_lock_file, lock_file_exists, remove_lock_file
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
 
 # Initialize Django
 django.setup()

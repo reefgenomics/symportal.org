@@ -2,7 +2,11 @@
 FROM continuumio/miniconda3:23.3.1-0
 
 # Install SSH client
-RUN apt-get update && apt-get install -y openssh-client cron logrotate
+RUN apt-get update && apt-get install -y \
+    openssh-client \
+    cron \
+    logrotate \
+    nano
 
 # Set working directory
 WORKDIR /app

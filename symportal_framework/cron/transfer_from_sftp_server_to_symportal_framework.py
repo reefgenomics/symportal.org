@@ -12,6 +12,9 @@ django.setup()
 # Import from installed Apps
 from dbApp.models import Submission
 
+from symportal_kitchen.utils.utils import (
+    generate_lock_file, remove_lock_file, lock_file_exists)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -137,27 +140,6 @@ class SFTPClient:
         except Exception as e:
             logging.error(
                 f'An error occurred while removing directory {self.remote_path}: {e}')
-
-
-def generate_lock_file(filepath):
-    with open(filepath, 'w') as file:
-        return
-
-
-def remove_lock_file(filepath):
-    if os.path.isfile(filepath):
-        os.remove(filepath)
-        logging.info(
-            f'The lock file {filepath} has been successfully removed.')
-    else:
-        logging.info(f'File {filepath} does not exist.')
-
-
-def lock_file_exists(filepath):
-    if os.path.exists(filepath):
-        return True
-    else:
-        return False
 
 
 def get_submissions_to_transfer(status):

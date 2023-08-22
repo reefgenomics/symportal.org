@@ -20,6 +20,9 @@ import stat
 from sqlalchemy import or_
 import warnings
 
+# for mailing feature
+from symportal_kitchen.email_notifications.submission_status import send_email
+
 # As we start to work with the remote database we will want to minimise calls to it.
 # As such we will make an initial call to get all studies
 # We have specified some lazy='joined' calls in the models.py file so that
@@ -146,20 +149,24 @@ def get_study_data(study_name, file_path):
                 # Or the user is an admin and we should release the data
                 if filename == 'study_data.js':
                     print(f'returning {os.path.join(file_dir, filename)}')
-                    return send_from_directory(directory=file_dir, filename=filename)
+                    return send_from_directory(directory=file_dir,
+                                               path=filename)
                 else:
                     print(f'returning {os.path.join(file_dir, filename)}')
-                    return send_from_directory(directory=file_dir, filename=filename, as_attachment=True)
+                    return send_from_directory(directory=file_dir,
+                                               path=filename,
+                                               as_attachment=True)
             else:
                 return redirect(url_for('index'))
     else:
         # Study is published
         if filename == 'study_data.js':
             print(f'returning {os.path.join(file_dir, filename)}')
-            return send_from_directory(directory=file_dir, filename=filename)
+            return send_from_directory(directory=file_dir, path=filename)
         else:
             print(f'returning {os.path.join(file_dir, filename)}')
-            return send_from_directory(directory=file_dir, filename=filename, as_attachment=True)
+            return send_from_directory(directory=file_dir, path=filename,
+                                       as_attachment=True)
 
 @app.route('/submit_data_learn_more')
 def submit_data_learn_more():
@@ -671,6 +678,11 @@ def _check_submission():
                     )
                     db.session.add(new_submission)
                     db.session.commit()
+
+                    # notify user or admin that submission was created
+                    send_email(to_email=sp_user.email,
+                               submission_status=new_submission.progress_status,
+                               recipient_name=sp_user.name)
 
                     # TODO if for_analysis is False then report this in the message here
                     # Return a completed response

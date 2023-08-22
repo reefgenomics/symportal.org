@@ -1,3 +1,4 @@
+import os
 from sp_app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -145,6 +146,7 @@ class SPUser(UserMixin, db.Model):
     __tablename__ = 'dbApp_user'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(100), index=True, unique=True, nullable=False)
     studies = db.relationship('Study', secondary=SPUser__Study, lazy='dynamic',
      backref=db.backref('users', lazy='dynamic'))
     
@@ -159,7 +161,8 @@ class SPUser(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f'<SPUser {self.name}>'
+        return (f'< User: id {self.id}, name: {self.name}, email: '
+                f'{self.email} >')
 
 
 class Submission(db.Model):

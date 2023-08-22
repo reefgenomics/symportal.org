@@ -220,8 +220,9 @@ class MothurAnalysis:
             )
         else:
             self.fasta_path = fwd_output_good_fasta_path
+
         if len(self.thread_safe_general.read_defined_file_to_list(self.fasta_path)) == 0:
-            error_message = 'PCR fasta file is blank.'
+            error_message = f'PCR fasta file is blank: {self.fasta_path}.'
             logging.error(error_message)
             raise RuntimeError(error_message)
 
@@ -437,6 +438,10 @@ class MothurAnalysis:
             )
             for line in self.thread_safe_general.decode_utf8_binary_to_list(self.latest_completed_process_command.stdout):
                 print(line)
+        logging.info(f'Running Mothur Batch File Command:\n'
+                     f'{self.latest_completed_process_command.args}')
+        logging.info(f'Mothur batch file content'
+                     f'{self.mothur_batch_file}')
 
     def _run_mothur_batch_file_command_make_contigs(self):
         """Now that we are running the new version of mothur, we are hoping that this process
@@ -516,6 +521,7 @@ class MothurAnalysis:
             f'pdiffs={self.pcr_fwd_primer_mismatch}, rdiffs={self.pcr_rev_primer_mismatch}, '
             f'processors=1)'
         ]
+        logging.info(f'Mothur batch file: {self.mothur_batch_file}')
 
     def _pcr_make_and_write_oligo_file_if_doesnt_exist(self):
         if self.pcr_oligo_file_path is None:
