@@ -53,6 +53,12 @@ Here below is an overview of the application architecture schema.
 
 ![image](https://github.com/greenjune-ship-it/symportal-2.0/assets/83506881/9a0b14e8-6acc-470f-863b-b814173fa5e9)
 
+## Application Instances
+
+* Dev: https://spi-220.biologie.uni-konstanz.de:8443/
+* Test: https://spi-220.biologie.uni-konstanz.de:8444/
+* Prod: https://spi-220.biologie.uni-konstanz.de:443/
+
 ## About
 
 The SymPortal Framework and Flask application was written by Benjamin Hume [benjamincchume@gmail.com](benjamincchume@gmail.com).
