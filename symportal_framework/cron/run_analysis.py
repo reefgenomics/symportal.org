@@ -117,7 +117,7 @@ def output(submissions, num_proc):
 if __name__ == '__main__':
 
     lock_file = f'/var/lock/{os.path.basename(__file__)}.lock'
-    num_proc = '30'
+    num_proc = '20'
 
     # Only one cron job process can be running
     if lock_file_exists(lock_file):
