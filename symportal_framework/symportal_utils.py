@@ -342,13 +342,14 @@ class MothurAnalysis:
             self.mothur_batch_file = [
                 f'set.dir(input={self.input_dir})',
                 f'set.dir(output={self.output_dir})',
-                f'summary.seqs(fasta={self.fasta_path}, name={self.name_file_path}, processors=1)'
+                f'summary.seqs(fasta={self.fasta_path}, name='
+                f'{self.name_file_path}, processors=10)'
             ]
         else:
             self.mothur_batch_file = [
                 f'set.dir(input={self.input_dir})',
                 f'set.dir(output={self.output_dir})',
-                f'summary.seqs(fasta={self.fasta_path}, processors=1)'
+                f'summary.seqs(fasta={self.fasta_path}, processors=10)'
             ]
 
         self.thread_safe_general.write_list_to_destination(self.mothur_batch_file_path, self.mothur_batch_file)
@@ -357,7 +358,8 @@ class MothurAnalysis:
         mothur_batch_file = [
             f'set.dir(input={self.input_dir})',
             f'set.dir(output={self.output_dir})',
-            f'make.contigs(file={self.dot_file_file_path}, mismatch=-4, gapopen=-4, processors=1)'
+            f'make.contigs(file={self.dot_file_file_path}, mismatch=-4, '
+            f'gapopen=-4, processors=10)'
         ]
         self.thread_safe_general.write_list_to_destination(self.mothur_batch_file_path, mothur_batch_file)
 
@@ -502,7 +504,8 @@ class MothurAnalysis:
         self.mothur_batch_file = [
             f'set.dir(input={self.input_dir})',
             f'set.dir(output={self.output_dir})',
-            f'screen.seqs(fasta={self.fasta_path}, name={self.name_file_path}, maxambig=0, processors=1)'
+            f'screen.seqs(fasta={self.fasta_path}, name='
+            f'{self.name_file_path}, maxambig=0, processors=10)'
         ]
 
     def _screen_seqs_make_mothur_batch_file_overlap(self):
@@ -510,7 +513,7 @@ class MothurAnalysis:
             f'set.dir(input={self.input_dir})',
             f'set.dir(output={self.output_dir})',
             f'screen.seqs(fasta={self.fasta_path}, '
-            f'contigsreport={self.report_path}, minoverlap=30, processors=1)'
+            f'contigsreport={self.report_path}, minoverlap=30, processors=10)'
         ]
 
     def _pcr_make_mothur_batch_file(self):
@@ -519,7 +522,7 @@ class MothurAnalysis:
             f'set.dir(output={self.output_dir})',
             f'pcr.seqs(fasta={self.fasta_path}, name={self.name_file_path}, oligos={self.pcr_oligo_file_path}, '
             f'pdiffs={self.pcr_fwd_primer_mismatch}, rdiffs={self.pcr_rev_primer_mismatch}, '
-            f'processors=1)'
+            f'processors=10)'
         ]
         logging.info(f'Mothur batch file: {self.mothur_batch_file}')
 

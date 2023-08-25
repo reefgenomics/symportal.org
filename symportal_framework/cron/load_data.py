@@ -89,7 +89,7 @@ def load_submission(submission):
         args=define_custom_args(
             submission=submission,
             datasheet_path=datasheet_path,
-            num_proc=min(30, submission.number_samples))
+            num_proc=min(20, submission.number_samples))
     )
     try:
         logging.info('Starting the workflow.')
