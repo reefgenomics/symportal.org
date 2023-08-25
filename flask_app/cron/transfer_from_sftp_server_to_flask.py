@@ -4,6 +4,7 @@ import sys
 import shutil
 import hashlib
 import logging
+import zipfile
 import paramiko
 from datetime import datetime
 
@@ -93,6 +94,30 @@ class SFTPClient:
             os.path.join(destination_dir, 'html', 'study_data.js'),
             os.path.join(destination_dir, 'study_data.js'))
         logging.info(f'Extracting files from the archive to {destination_dir}.')
+    def zip_study_output_info(self, folder_path):
+        if not os.path.exists(folder_path):
+            logging.error(f'Folder path does not exist: {folder_path}.')
+
+        json_file_path = os.path.join(folder_path, 'study_output_info.json')
+        if os.path.exists(json_file_path):
+            with zipfile.ZipFile(json_file_path + '.zip', 'w',
+                                 zipfile.ZIP_DEFLATED) as zipf:
+                zipf.write(json_file_path, 'study_output_info.json')
+            os.remove(json_file_path)
+            logging.debug('study_output_info.json zipped and removed.')
+
+        for root, dirs, files in os.walk(folder_path):
+            if root != folder_path:
+                for file in files:
+                    if not file.endswith('.zip'):
+                        file_path = os.path.join(root, file)
+                        zip_path = os.path.relpath(file_path, folder_path)
+                        with zipfile.ZipFile(file_path + '.zip', 'w',
+                                             zipfile.ZIP_DEFLATED) as zipf:
+                            zipf.write(file_path, zip_path)
+                        os.remove(file_path)
+
+        logging.info(f'Archiving of data_explorer files complete.')
 
     def update_submission_status(self, submission_name):
         with app.app_context():
@@ -163,6 +188,7 @@ if __name__ == '__main__':
             sftp_client.copy_analysis_output()
             sftp_client.md5sum_check()
             sftp_client.unzip_archive(f'{sftp_client.local_path}/{submission.name}.zip', sftp_client.local_path)
+            sftp_client.zip_study_output_info(sftp_client.local_path)
             sftp_client.update_submission_status(submission.name)
             # notify user by email that data loading has been started
             with app.app_context():
