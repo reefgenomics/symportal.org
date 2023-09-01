@@ -150,7 +150,7 @@ class SymPortalWorkFlowManager:
     @staticmethod
     def _define_additional_args(parser):
         parser.add_argument('--num_proc', type=int, help='Number of '
-                                                         'processors to use', default=10)
+                                                         'processors to use', default=1)
         parser.add_argument('--name', help='A name for your input or analysis', default='noName')
         parser.add_argument('--description', help='An optional description', default='No description')
         parser.add_argument('--data_analysis_id', type=int, help='The ID of the data_analysis you wish to output from')
