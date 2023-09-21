@@ -61,7 +61,7 @@
             {% if app_env == "prod" %}
             <div class="title">SymPortal</div>
             {% else %}
-            <div class="title">SymPortal {{ app_env }}</div>
+            <div class="title">SymPortal {{ app_env|capitalize }}</div>
             {% endif %}
             
             <br class="clear">
