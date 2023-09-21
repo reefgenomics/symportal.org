@@ -57,7 +57,12 @@
         <div class="content" id="showcase_content">
             
             <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}" class="logo" alt="reef_drop">
+
+            {% if app_env == "prod" %}
             <div class="title">SymPortal</div>
+            {% else %}
+            <div class="title">SymPortal {{ app_env }}</div>
+            {% endif %}
             
             <br class="clear">
             <div class="text">a novel analytical framework and platform for coral algal symbiont NGS ITS2 profiling</div>
