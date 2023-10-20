@@ -72,7 +72,8 @@ def index():
             resource_info_dict=resource_info_dict,
             user_pending_submissions=user_pending_submissions,
             allow_submission=allow_submission,
-            email_address=os.getenv('CONTACT_EMAIL_ADDRESS')
+            email_address=os.getenv('CONTACT_EMAIL_ADDRESS'),
+            app_env=os.getenv('ENV')
         )
 
 def get_spuser_by_name_from_orm_spuser_list(user_to_match):
