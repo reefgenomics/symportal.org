@@ -55,9 +55,8 @@ Here below is an overview of the application architecture schema.
 
 ## Application Instances
 
-* Dev: https://spi-220.biologie.uni-konstanz.de:8443/
-* Test: https://spi-220.biologie.uni-konstanz.de:8444/
-* Prod: https://spi-220.biologie.uni-konstanz.de:443/
+* Dev: https://symportal.org:8443/
+* Prod: https://symportal.org:443/
 
 ## About
 
