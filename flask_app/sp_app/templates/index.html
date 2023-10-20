@@ -73,7 +73,11 @@
 
         <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}"
              class="logo" alt="reef_drop">
+        {% if app_env == "prod" %}
         <div class="title">SymPortal</div>
+        {% else %}
+        <div class="title">SymPortal {{ app_env|capitalize }}</div>
+        {% endif %}
 
         <br class="clear">
         <p>
