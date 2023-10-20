@@ -54,7 +54,7 @@ sendgrid==6.10.0
 six==1.16.0
 SQLAlchemy==2.0.19
 starkbank-ecdsa==2.2.0
-symportal-kitchen @ git+https://github.com/greenjune-ship-it/symportal_kitchen.git
+symportal-kitchen @ git+https://github.com/greenjune-ship-it/symportal_kitchen.git@8c538ca6c701d3581e559d492be04d2f7dc3c837
 tbb==2021.10.0
 tomli==2.0.1
 tomlkit==0.12.1
