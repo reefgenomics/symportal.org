@@ -7,15 +7,24 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta property="og:site_name" content="symportal.org">
-    <meta property="og:description" content="a novel analytical framework and platform for coral algal symbiont NGS ITS2 profiling">
-    <meta property="og:image" content="{{ url_for('static', filename='images/preview_img.jpg') }}">
+    <meta property="og:description"
+          content="a novel analytical framework and platform for coral algal symbiont NGS ITS2 profiling">
+    <meta property="og:image"
+          content="{{ url_for('static', filename='images/preview_img.jpg') }}">
     <meta property="og:url" content="http://symportal.org/">
     <meta property="og:type" content="website">
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="icon"
+          href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet"
+          href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+          integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/index.css') }}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
@@ -23,436 +32,493 @@
 </head>
 
 <body>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="bg-dark" style="padding:1rem 0rem;">
-            {% for message in messages %}
-            <span style="padding:0rem 1rem;">{{ message}}</span>
-            {% endfor %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="bg-dark" style="padding:1rem 0rem;">
+    {% for message in messages %}
+    <span style="padding:0rem 1rem;">{{ message}}</span>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+<header class="showcase">
+    <!-- Nav bar in here -->
+    <nav class="nav_content no_blur" id="nav_cont">
+        <div class="left_nav">
+            <a href="http://reefgenomics.org/">Reef Genomics</a>
         </div>
-        {% endif %}
-    {% endwith %}
-    <header class="showcase">
-        <!-- Nav bar in here -->
-        <nav class="nav_content no_blur" id="nav_cont">
-            <div class="left_nav">
-                <a href="http://reefgenomics.org/">Reef Genomics</a>
+        <div class="right_nav">
+            {% if current_user.is_anonymous %}
+            <span style="padding-right:1rem;">Logged in as: <b>anonymous</b></span>
+            <a href="{{ url_for('login') }}">Login</a>
+            {% else %}
+            <span style="padding-right:1rem;">Logged in as: <b><a
+                    href="{{ url_for('profile') }}"
+                    style="text-decoration: underline;">{{ current_user.name }}</a></b></span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% if current_user.has_upload_permission or current_user.is_admin
+            %}
+            <a href="{{ url_for('upload_data') }}">Submit Data</a>
+            {% endif %}
+            {% endif %}
+            <a href="https://github.com/SymPortal/SymPortal_framework">source
+                code</a><span class="vert_div_smll"></span><a
+                href="https://github.com/SymPortal/SymPortal_framework/wiki">wiki</a><span
+                class="vert_div_smll"></span><a href="/">home</a>
+        </div>
+    </nav>
+
+    <!-- Content has been positioned absolutely -->
+    <div class="content" id="showcase_content">
+
+        <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}"
+             class="logo" alt="reef_drop">
+        <div class="title">SymPortal</div>
+
+        <br class="clear">
+        <div class="text">the analytical framework and platform for coral
+            algal symbiont NGS ITS2 profiling
+        </div>
+        <p>
+            Please Cite Us
+            <br>
+            Hume, Benjamin CC, Edward G. Smith, Maren Ziegler,
+            Hugh JM Warrington, John A. Burt, Todd C. LaJeunesse,
+            Joerg Wiedenmann, and Christian R. Voolstra.
+            "SymPortal: A novel analytical framework and platform for coral
+            algal symbiont next‐generation sequencing ITS2 profiling."
+            Molecular ecology resources 19;1063-1080 (2019).
+            <a href="https://doi.org/10.1111/1755-0998.13004">https://doi.org/10.1111/1755-0998.13004</a>
+            <br>
+            <div id="citation_links">
+                <a href="{{ url_for('static', filename='resources/bibtex_ref.txt') }}">BibTeX</a>
+                <a href="{{ url_for('static', filename='resources/symportal_endnote_ref.enw') }}">EndNote</a>
+                <a href="{{ url_for('static', filename='resources/symportal_refman_ref.ris') }}">RefMan</a>
             </div>
-            <div class="right_nav">
-                {% if current_user.is_anonymous %}
-                <span style="padding-right:1rem;">Logged in as: <b>anonymous</b></span>
-                <a href="{{ url_for('login') }}">Login</a>
+        </p>
+    </div>
+    <!-- showcase::After -->
+</header>
+
+
+<section class="notification">
+    <p class="notification_text"
+       style="padding-top: 1em; padding-bottom: 1em; margin-bottom: 0em;"
+       align="center"><strong>Notice:</strong> From 14.07.2021 new submissions
+        to SymPortal will be
+        embargoed for a period of 1 year.<br> After this time they will be made
+        public
+        for querying via SymPortal's DataExplorer.
+        <br>Embargo extensions are available upon request.<br>
+        Submissions made before 14.07.2021 are unaffected by this change
+        and will remain embargoed indefinitely or until published.<br>
+        Please see <a href="{{ url_for('submit_data_learn_more') }}">Submit
+            Data</a> for more details.</p>
+
+</section>
+
+<!-- Services and DataExplorer-->
+<section class="services bg-dark">
+    <div class="container">
+        <div class="grid-3 center">
+            <div class="service_item">
+                <i class="fas fa-users fa-3x"></i>
+                <p class="services_head">Community driven</p>
+                <p class="services_text">Improved resolution with greater
+                    use</p>
+            </div>
+            <div class="service_item">
+                <i class="fas fa-database fa-3x"></i>
+                <p class="services_head">Database integrated</p>
+                <p class="services_text">Standardisation-enforced central
+                    repository</p>
+            </div>
+            <div class="service_item">
+                <i class="fas fa-fingerprint fa-3x"></i>
+                <p class="services_head">ITS2 type profiling</p>
+                <p class="services_text">Sequence-based putative taxa
+                    prediction</p>
+            </div>
+
+        </div>
+        <div class="grid-1 center">
+            <div class="service_item">
+                <form action="{{ url_for('data_explorer') }}" method="POST">
+                    <button class="DEbtn" name="study_to_load"
+                            value="Terraneo_et_al_2019">
+                        <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}"
+                             class="logo" alt="pic01"></img>
+                    </button>
+                </form>
+                <h3>DataExplorer</h3>
+                <p class="services_text">Launch SymPortal's DataExplorer to
+                    interact with published data sets</p>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<!-- Enter DataExplorer-->
+
+
+<!-- Operations-->
+<section class="operations bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-md-12 center my-3">
+                <img src="{{ url_for('static', filename='images/landing_one.jpg') }}"
+                     class="img-rnd" alt="pic01">
+
+                {% if allow_submission %}
+                <h3>Upload data</h3>
+                <p>Upload sequencing data for SymPortal analysis.<br><a
+                        href="{{ url_for('submit_data_learn_more') }}">[Learn
+                    more]</a></p>
+                <a class="btn" href="{{ url_for('upload_data') }}">Upload</a>
                 {% else %}
-                <span style="padding-right:1rem;">Logged in as: <b><a href="{{ url_for('profile') }}" style="text-decoration: underline;">{{ current_user.name }}</a></b></span>
-                <a href="{{ url_for('logout') }}">Logout</a>
-                    {% if current_user.has_upload_permission or current_user.is_admin %}
-                        <a href="{{ url_for('upload_data') }}">Submit Data</a>
-                    {% endif %}
+                <h3>Submit data</h3>
+                <p>To submit your data and run it against the remote database,
+                    please contact: <a class="email_a"
+                                       href="mailto:{{ email_address }}?Subject=new submission enquiry">{{
+                        email_address }}</a>
+                </p>
+                <a class="btn" href="{{ url_for('submit_data_learn_more') }}">Learn
+                    more</a>
                 {% endif %}
-                <a href="https://github.com/SymPortal/SymPortal_framework">source code</a><span class="vert_div_smll"></span><a href="https://github.com/SymPortal/SymPortal_framework/wiki">wiki</a><span class="vert_div_smll"></span><a href="/">home</a>
             </div>
-        </nav>
 
-        <!-- Content has been positioned absolutely -->
-        <div class="content" id="showcase_content">
-            
-            <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}" class="logo" alt="reef_drop">
-            <div class="title">SymPortal</div>
-            
-            <br class="clear">
-            <div class="text">a novel analytical framework and platform for coral algal symbiont NGS ITS2 profiling</div>
+            <!--Run locally-->
+            <div class="col-lg-6 col-md-12 center my-3">
+                <img src="{{ url_for('static', filename='images/landing_two.jpeg') }}"
+                     class="img-rnd" alt="pic02">
+                <h3>Run locally</h3>
+                <p>You can run the SymPortal analysis locally using your own
+                    machine and your own database.</p>
+                <a class="btn"
+                   href="https://github.com/SymPortal/SymPortal_framework/wiki">SymPortal
+                    Local</a>
+            </div>
         </div>
-        <!-- showcase::After -->
-    </header>
-    
+        <!--Submit data -->
 
-    <section class="notification">
-        <p class="notification_text" style="padding-top: 1em; padding-bottom: 1em; margin-bottom: 0em;"
-           align="center"><strong>Notice:</strong> From 14.07.2021 new submissions to SymPortal will be
-            embargoed for a period of 1 year.<br> After this time they will be made public
-            for querying via SymPortal's DataExplorer.
-            <br>Embargo extensions are available upon request.<br>
-            Submissions made before 14.07.2021 are unaffected by this change
-            and will remain embargoed indefinitely or until published.<br>
-            Please see <a href="{{ url_for('submit_data_learn_more') }}">Submit Data</a> for more details.</p>
-        
-    </section>
 
-    <!-- Services and DataExplorer-->
-    <section class="services bg-dark">
-        <div class="container">
-            <div class="grid-3 center">
-                <div class="service_item">
-                    <i class="fas fa-users fa-3x"></i>
-                    <p class="services_head">Community driven</p>
-                    <p class="services_text">Improved resolution with greater use</p>
-                </div>
-                <div class="service_item">
-                    <i class="fas fa-database fa-3x"></i>
-                    <p class="services_head">Database integrated</p>
-                    <p class="services_text">Standardisation-enforced central repository</p>
-                </div>
-                <div class="service_item">
-                    <i class="fas fa-fingerprint fa-3x"></i>
-                    <p class="services_head">ITS2 type profiling</p>
-                    <p class="services_text">Sequence-based putative taxa prediction</p>
-                </div>
-                
-            </div>
-            <div class="grid-1 center">
-                <div class="service_item">
-                    <form action="{{ url_for('data_explorer') }}" method="POST">
-                        <button class="DEbtn" name="study_to_load" value="Terraneo_et_al_2019">
-                            <img src="{{ url_for('static', filename='images/greyscale_alt1.svg') }}" class="logo" alt="pic01"></img>
+    </div>
+</section>
+
+
+<!-- Resources -->
+<section class="cite_us bg-light">
+    <table id="resources_table" class="table table-striped table-bordered">
+        <caption>Resources</caption>
+        <thead>
+        <tr>
+            <th>Resource</th>
+            <th>Description</th>
+            <th>Link</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td label="Resource">published pre-MED sequences</td>
+            {% autoescape false %}
+            <td label="Description">{{
+                resource_info_dict["published_pre_med_seqs_description"] }}
+            </td>
+            {% endautoescape %}
+            <td label="Link">
+                <a href=" {{ url_for('static', filename='resources/published_pre_med.fasta.gz') }}">
+                    <div style="height:100%;width:100%;">
+                        Download
+                    </div>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td label="Resource">
+                published post-MED sequences
+            </td>
+            {% autoescape false %}
+            <td label="Description">
+                {{ resource_info_dict["published_post_med_seqs_description"] }}
+            </td>
+            {% endautoescape %}
+            <td label="Link">
+                <a href="{{ url_for('static', filename='resources/published_post_med.fasta.gz') }}">
+                    <div style="height:100%;width:100%;">
+                        Download
+                    </div>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td label="Resource">
+                published named sequences
+            </td>
+            {% autoescape false %}
+            <td label="Description">{{
+                resource_info_dict["published_named_seqs_description"] }}
+            </td>
+            {% endautoescape %}
+            <td label="Link">
+                <a href="{{ url_for('static', filename='resources/published_div.fasta.gz') }}">
+                    <div style="height:100%;width:100%;">
+                        Download
+                    </div>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p class="table_footnotes">Interested in a published resource that's not
+        listed? Get in touch!</p>
+
+
+</section>
+
+<!-- Published articles that use SymPortal -->
+<section class="bg-light">
+    <div>
+        <table id="published_articles_table"
+               class="table table-striped table-bordered">
+            <caption>Published articles using SymPortal</caption>
+            <thead>
+            <tr>
+                <th>Article</th>
+                <th>Title</th>
+                <th>Location</th>
+                <th>#Samples</th>
+                <th>Additional markers</th>
+                <th>Run type</th>
+                <th>Article</th>
+                <th>Data</th>
+                <th>DataExplorer</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- NB the label attributes are used for the mobile display -->
+            {% for pd in published_studies %}
+            <tr>
+                <td label="Article">{{ pd.name }}</td>
+                <td label="Title">{{ pd.title }}</td>
+                <td label="Location">{{ pd.location }}</td>
+                <td label="#Samples">{{ pd.get_num_samples() }}</td>
+                {% if pd.additional_markers == 'psbAncr' %}
+                <td label="Additional markers">
+                    <i>psbA<sup>ncr</sup></i>
+                </td>
+                {% else %}
+                <td label="Additional markers">{{ pd.additional_markers }}</td>
+                {% endif %}
+                <td label="Run type">{{ pd.run_type }}</td>
+                {% if (pd.article_url != '--') and pd.article_url %}
+                <td label="Article URL">
+                    <a href="{{ pd.article_url }}">
+                        <div style="height:100%;width:100%">Article</div>
+                    </a>
+                </td>
+                {% else %}
+                <td label="Article URL">--</td>
+                {% endif %}
+                {% if (pd.data_url != '--') and pd.data_url %}
+                <td label="Seq data URL">
+                    <a href="{{ pd.data_url }}">
+                        <div style="height:100%;width:100%">Data</div>
+                    </a>
+                </td>
+                {% else %}
+                <td label="Seq data URL">--</td>
+                {% endif %}
+                <!-- DataExplorer icon -->
+                {% if pd.data_explorer %}
+                <td align="center">
+                    <form action="{{ url_for('data_explorer') }}"
+                          method="POST">
+                        <button class="DEbtn" name="study_to_load"
+                                value="{{ pd.name }}">
+                            <img src="{{ url_for('static', filename='images/sp_logo_green.svg') }}"
+                                 style="height:20px;">
                         </button>
                     </form>
-                    <h3>DataExplorer</h3>
-                    <p class="services_text">Launch SymPortal's DataExplorer to interact with published data sets</p>
-                </div>
-            </div>
-        </div>
-        
-    </section>
-    
-    <!-- Enter DataExplorer-->
+                </td>
+                {% else %}
+                <td align="center">
+                    <img src="{{ url_for('static', filename='images/sp_logo.svg') }}"
+                         style="height:20px;">
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p class="table_footnotes">Do you have an article to add? Do you have
+            additional information about an existing article? Get in touch!</p>
+    </div>
+</section>
+
+<!-- Your unpublished analyses -->
+{% if user_unpublished_studies %}
+<section class="bg-light">
+    <table id="unpublished_articles_table"
+           class="table table-striped table-bordered">
+        <caption>Your unpublished analyses</caption>
+        <thead>
+        <tr>
+            <th>Article</th>
+            <th>Title</th>
+            <th>Location</th>
+            <th>#Samples</th>
+            <th>Additional markers</th>
+            <th>Run type</th>
+            <th>Article</th>
+            <th>Data</th>
+            <th>DataExplorer</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for upd in user_unpublished_studies %}
+        <tr>
+            <td label="Article">{{ upd.name }}</td>
+            <td label="Title">{{ upd.title }}</td>
+            <td label="Location">{{ upd.location }}</td>
+            <td label="#Samples">{{ upd.get_num_samples() }}</td>
+            {% if upd.additional_markers == 'psbAncr' %}
+            <td label="Additional markers">
+                <i>psbA<sup>ncr</sup></i>
+            </td>
+            {% else %}
+            <td label="Additional markers">{{ upd.additional_markers }}</td>
+            {% endif %}
+            <td label="Run type">{{ upd.run_type }}</td>
+            {% if (upd.article_url != '--') and upd.article_url %}
+            <td label="Article URL">
+                <a href="{{ upd.article_url }}">
+                    <div style="height:100%;width:100%">Article</div>
+                </a>
+            </td>
+            {% else %}
+            <td label="Article URL">--</td>
+            {% endif %}
+            {% if (upd.data_url != '--') and upd.data_url %}
+            <td label="Seq data URL">
+                <a href="{{ upd.data_url }}">
+                    <div style="height:100%;width:100%">Data</div>
+                </a>
+            </td>
+            {% else %}
+            <td label="Seq data URL">--</td>
+            {% endif %}
+            <!-- DataExplorer icon -->
+            {% if upd.data_explorer %}
+            <td align="center">
+                <form action="{{ url_for('data_explorer') }}" method="POST">
+                    <button class="DEbtn" name="study_to_load"
+                            value="{{ upd.name }}">
+                        <img src="{{ url_for('static', filename='images/sp_logo_green.svg') }}"
+                             style="height:20px;">
+                    </button>
+                </form>
+            </td>
+            {% else %}
+            <td align="center">
+                <img src="{{ url_for('static', filename='images/sp_logo.svg') }}"
+                     style="height:20px;">
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<!-- Your pending submissions -->
+{% if user_pending_submissions %}
+<section class="bg-light">
+    <table id="pending_submissions_table"
+           class="table table-striped table-bordered">
+        <caption>Your pending submissions</caption>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>UID</th>
+            <th>#Samples</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>Last update</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for ups in user_pending_submissions %}
+        <tr>
+            <td label="Name">{{ ups.name }}</td>
+            <td label="UID">{{ ups.id }}</td>
+            <td label="#Samples">{{ ups.number_samples }}</td>
+            <td label="Submitted">{{ ups.submission_date_time }}</td>
+            {% if ups.transfer_to_web_server_date_time is not none %}
+            <td label="Status">Complete</td>
+            <td label="Last_update">{{ups.transfer_to_web_server_date_time}}
+            </td>
+            {% elif ups.study_output_complete_date_time is not none %}
+            <td label="Status">Awaiting transfer to web server</td>
+            <td label="Last_update">{{ups.study_output_complete_date_time}}
+            </td>
+            {% elif ups.study_output_started_date_time is not none %}
+            <td label="Status">Study output in progress</td>
+            <td label="Last_update">{{ups.study_output_started_date_time}}</td>
+            {% elif ups.analysis_complete_date_time is not none %}
+            <td label="Status">Awaiting study output</td>
+            <td label="Last_update">{{ups.analysis_complete_date_time}}</td>
+            {% elif ups.analysis_started_date_time is not none %}
+            <td label="Status">Analysis in progress</td>
+            <td label="Last_update">{{ups.analysis_started_date_time}}</td>
+            {% elif ups.loading_complete_date_time is not none %}
+            <td label="Status">Awaiting analysis</td>
+            <td label="Last_update">{{ups.loading_complete_date_time}}</td>
+            {% elif ups.loading_started_date_time is not none %}
+            <td label="Status">Data loading in progress</td>
+            <td label="Last_update">{{ups.loading_started_date_time}}</td>
+            {% elif ups.transfer_to_framework_server_date_time is not none %}
+            <td label="Status">Awaiting data loading</td>
+            <td label="Last_update">
+                {{ups.transfer_to_framework_server_date_time}}
+            </td>
+            {% else %}
+            <td label="Status">Awaiting transfer to framework server</td>
+            <td label="Last_update">{{ups.submission_date_time}}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<footer class="bg-dark">
+    <p>SymPortal: a novel analytical framework and platform for coral algal
+        symbiont next-generation sequencing ITS2 profiling</p>
+    <p>Hosted by the <a
+            href="https://padlet.com/chrisvoolstra/tddb7auy6n961um7">Reef
+        Genomics Laboratory, University of Konstanz</a></p>
+    <p>Collaborators: <a
+            href="https://www.southampton.ac.uk/oes/research/facilities/corals.page">The
+        Coral Reef Laboratory, Univerisity of Southampton</a>;
+        <a href="https://nyuad.nyu.edu/en/research/centers-labs-and-projects/marine-biology-lab.html">Marine
+            Biology Lab, NYU Abu Dhabi</a>;
+        <a href="http://www.personal.psu.edu/tcl3/">The Symbiosis Ecology and
+            Evolution Laboratory, Penn State</a>;</p>
+    <p>Images: <a href="https://rsrc.kaust.edu.sa/Pages/Radecker.aspx">N.
+        Raedecker</a>, <a
+            href="https://rsrc.kaust.edu.sa/Pages/Pogoreutz.aspx">C.
+        Pogoreutz</a>, <a href="https://rsrc.kaust.edu.sa/Pages/Gegner.aspx">H.
+        Gegner</a>. Acknowledgements logo: Alex Mercière.</p>
+    <br>
+    <p>Contact: <a
+            href="mailto:{{ email_address }}?Subject=new submission enquiry">{{
+        email_address }}</a></p>
+</footer>
 
 
-
-    <!-- Operations-->
-    <section class="operations bg-light">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 col-md-12 center my-3">
-                    <img src="{{ url_for('static', filename='images/landing_one.jpg') }}" class="img-rnd" alt="pic01">
-
-                        {% if allow_submission %}
-                            <h3>Upload data</h3>
-                            <p>Upload sequencing data for SymPortal analysis.<br><a href="{{ url_for('submit_data_learn_more') }}">[Learn more]</a></p>
-                            <a class="btn" href="{{ url_for('upload_data') }}">Upload</a>
-                        {% else %}
-                            <h3>Submit data</h3>
-                            <p>To submit your data and run it against the remote database, please contact: <a class="email_a" href="mailto:{{ email_address }}?Subject=new submission enquiry">{{ email_address }}</a>
-                                    </p>
-                            <a class="btn" href="{{ url_for('submit_data_learn_more') }}">Learn more</a>
-                        {% endif %}
-                </div>
-
-                <!--Run locally-->
-                <div class="col-lg-6 col-md-12 center my-3">
-                    <img src="{{ url_for('static', filename='images/landing_two.jpeg') }}" class="img-rnd" alt="pic02">
-                    <h3>Run locally</h3>
-                    <p>You can run the SymPortal analysis locally using your own machine and your own database.</p>
-                    <a class="btn" href="https://github.com/SymPortal/SymPortal_framework/wiki">SymPortal Local</a>
-                </div>
-            </div>
-            <!--Submit data -->
-
-
-
-
-
-        </div>
-    </section>
-
-    
-
-    <!-- Resources -->
-    <section class="cite_us bg-light">
-            <table id="resources_table" class="table table-striped table-bordered">
-                <caption>Resources</caption>
-                <thead>
-                    <tr>
-                        <th>Resource</th>
-                        <th>Description</th>
-                        <th>Link</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td label="Resource">published pre-MED sequences</td>
-                        {% autoescape false %}
-                        <td label="Description">{{ resource_info_dict["published_pre_med_seqs_description"] }}</td>
-                        {% endautoescape %}
-                        <td label="Link">
-                            <a href=" {{ url_for('static', filename='resources/published_pre_med.fasta.gz') }}">
-                                <div style="height:100%;width:100%;">
-                                    Download
-                                </div>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td label="Resource">
-                            published post-MED sequences
-                        </td>
-                        {% autoescape false %}
-                        <td label="Description">
-                            {{ resource_info_dict["published_post_med_seqs_description"] }}
-                        </td>
-                        {% endautoescape %}
-                        <td label="Link">
-                            <a href="{{ url_for('static', filename='resources/published_post_med.fasta.gz') }}">
-                                <div style="height:100%;width:100%;">
-                                    Download
-                                </div>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td label="Resource">
-                            published named sequences
-                        </td>
-                        {% autoescape false %}
-                        <td label="Description">{{ resource_info_dict["published_named_seqs_description"] }}</td>
-                        {% endautoescape %}
-                        <td label="Link">
-                            <a href="{{ url_for('static', filename='resources/published_div.fasta.gz') }}">
-                                <div style="height:100%;width:100%;">
-                                    Download
-                                </div>
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <p class="table_footnotes">Interested in a published resource that's not listed? Get in touch!</p>
-        
-
-    </section>
-
-    <!-- Published articles that use SymPortal -->
-    <section class="bg-light" >
-        <div>
-            <table id="published_articles_table" class="table table-striped table-bordered">
-                <caption>Published articles using SymPortal</caption>
-                <thead>
-                    <tr>
-                        <th>Article</th>
-                        <th>Title</th>
-                        <th>Location</th>
-                        <th>#Samples</th>
-                        <th>Additional markers</th>
-                        <th>Run type</th>
-                        <th>Article</th>
-                        <th>Data</th>
-                        <th>DataExplorer</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <!-- NB the label attributes are used for the mobile display -->
-                {% for pd in published_studies %}                    
-                    <tr>
-                        <td label="Article">{{ pd.name }}</td>
-                        <td label="Title">{{ pd.title }}</td>
-                        <td label="Location">{{ pd.location }}</td>
-                        <td label="#Samples">{{ pd.get_num_samples() }}</td>
-                        {% if pd.additional_markers == 'psbAncr' %}
-                        <td label="Additional markers">
-                            <i>psbA<sup>ncr</sup></i>
-                        </td>
-                        {% else %}
-                        <td label="Additional markers">{{ pd.additional_markers }}</td>
-                        {% endif %}
-                        <td label="Run type">{{ pd.run_type }}</td>
-                        {% if (pd.article_url != '--') and pd.article_url %}
-                        <td label="Article URL">
-                            <a href="{{ pd.article_url }}">
-                                <div style="height:100%;width:100%">Article</div>
-                            </a>
-                        </td>
-                        {% else %}
-                        <td label="Article URL">--</td>
-                        {% endif %}
-                        {% if (pd.data_url != '--') and pd.data_url %}
-                        <td label="Seq data URL">
-                            <a href="{{ pd.data_url }}">
-                                <div style="height:100%;width:100%">Data</div>
-                            </a>
-                        </td>
-                        {% else %}
-                        <td label="Seq data URL">--</td>
-                        {% endif %}
-                        <!-- DataExplorer icon -->
-                        {% if pd.data_explorer %}
-                        <td align="center">
-                            <form action="{{ url_for('data_explorer') }}" method="POST">
-                                <button class="DEbtn" name="study_to_load" value="{{ pd.name }}">
-                                    <img src="{{ url_for('static', filename='images/sp_logo_green.svg') }}" style="height:20px;">
-                                </button>
-                            </form>
-                        </td>
-                        {% else %}
-                        <td align="center">
-                            <img src="{{ url_for('static', filename='images/sp_logo.svg') }}" style="height:20px;">
-                        </td>
-                        {% endif %}
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <p class="table_footnotes">Do you have an article to add? Do you have additional information about an existing article? Get in touch!</p>
-        </div>
-    </section>
-
-    <!-- Your unpublished analyses -->
-    {% if user_unpublished_studies %}
-        <section class="bg-light" >
-            <table id="unpublished_articles_table" class="table table-striped table-bordered">
-                <caption>Your unpublished analyses</caption>
-                <thead>
-                    <tr>
-                        <th>Article</th>
-                        <th>Title</th>
-                        <th>Location</th>
-                        <th>#Samples</th>
-                        <th>Additional markers</th>
-                        <th>Run type</th>
-                        <th>Article</th>
-                        <th>Data</th>
-                        <th>DataExplorer</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for upd in user_unpublished_studies %}
-                        <tr>
-                            <td label="Article">{{ upd.name }}</td>
-                            <td label="Title">{{ upd.title }}</td>
-                            <td label="Location">{{ upd.location }}</td>
-                            <td label="#Samples">{{ upd.get_num_samples() }}</td>
-                            {% if upd.additional_markers == 'psbAncr' %}
-                            <td label="Additional markers">
-                                <i>psbA<sup>ncr</sup></i>
-                            </td>
-                            {% else %}
-                            <td label="Additional markers">{{ upd.additional_markers }}</td>
-                            {% endif %}
-                            <td label="Run type">{{ upd.run_type }}</td>
-                            {% if (upd.article_url != '--') and upd.article_url %}
-                            <td label="Article URL">
-                                <a href="{{ upd.article_url }}">
-                                    <div style="height:100%;width:100%">Article</div>
-                                </a>
-                            </td>
-                            {% else %}
-                            <td label="Article URL">--</td>
-                            {% endif %}
-                            {% if (upd.data_url != '--') and upd.data_url %}
-                            <td label="Seq data URL">
-                                <a href="{{ upd.data_url }}">
-                                    <div style="height:100%;width:100%">Data</div>
-                                </a>
-                            </td>
-                            {% else %}
-                            <td label="Seq data URL">--</td>
-                            {% endif %}
-                            <!-- DataExplorer icon -->
-                            {% if upd.data_explorer %}
-                            <td align="center">
-                                <form action="{{ url_for('data_explorer') }}" method="POST">
-                                    <button class="DEbtn" name="study_to_load" value="{{ upd.name }}">
-                                        <img src="{{ url_for('static', filename='images/sp_logo_green.svg') }}" style="height:20px;">
-                                    </button>
-                                </form>
-                            </td>
-                            {% else %}
-                            <td align="center">
-                                <img src="{{ url_for('static', filename='images/sp_logo.svg') }}" style="height:20px;">
-                            </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    {% endif %}
-
-    <!-- Your pending submissions -->
-    {% if user_pending_submissions %}
-        <section class="bg-light" >
-            <table id="pending_submissions_table" class="table table-striped table-bordered">
-                <caption>Your pending submissions</caption>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>UID</th>
-                        <th>#Samples</th>
-                        <th>Submitted</th>
-                        <th>Status</th>
-                        <th>Last update</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ups in user_pending_submissions %}
-                        <tr>
-                            <td label="Name">{{ ups.name }}</td>
-                            <td label="UID">{{ ups.id }} </td>
-                            <td label="#Samples">{{ ups.number_samples }}</td>
-                            <td label="Submitted">{{ ups.submission_date_time }}</td>
-                            {% if ups.transfer_to_web_server_date_time is not none %}
-                                <td label="Status">Complete</td>
-                                <td label="Last_update">{{ups.transfer_to_web_server_date_time}}</td>
-                            {% elif ups.study_output_complete_date_time is not none %}
-                                <td label="Status">Awaiting transfer to web server</td>
-                                <td label="Last_update">{{ups.study_output_complete_date_time}}</td>
-                            {% elif ups.study_output_started_date_time is not none %}
-                                <td label="Status">Study output in progress</td>
-                                <td label="Last_update">{{ups.study_output_started_date_time}}</td>
-                            {% elif ups.analysis_complete_date_time is not none %}
-                                <td label="Status">Awaiting study output</td>
-                                <td label="Last_update">{{ups.analysis_complete_date_time}}</td>
-                            {% elif ups.analysis_started_date_time is not none %}
-                                <td label="Status">Analysis in progress</td>
-                                <td label="Last_update">{{ups.analysis_started_date_time}}</td>
-                            {% elif ups.loading_complete_date_time is not none %}
-                                <td label="Status">Awaiting analysis</td>
-                                <td label="Last_update">{{ups.loading_complete_date_time}}</td>
-                            {% elif ups.loading_started_date_time is not none %}
-                                <td label="Status">Data loading in progress</td>
-                                <td label="Last_update">{{ups.loading_started_date_time}}</td>
-                            {% elif ups.transfer_to_framework_server_date_time is not none %}
-                                <td label="Status">Awaiting data loading</td>
-                                <td label="Last_update">{{ups.transfer_to_framework_server_date_time}}</td>
-                            {% else %}
-                                <td label="Status">Awaiting transfer to framework server</td>
-                                <td label="Last_update">{{ups.submission_date_time}}</td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    {% endif %}
-
-    <!-- Cite Us -->
-    <section class="bg-light">
-        <div class="container middle_container">
-            <h3 class="light_header">Please cite us</h3>
-            <div style="font-size: 0.8em;" id="cite_us_text">
-                <p>If you use the SymPortal analysis or make use of any of the SymPortal resources above, please cite us:</p>
-                <p>Hume, Benjamin CC, Edward G. Smith, Maren Ziegler, Hugh JM Warrington, John A. Burt, Todd C. LaJeunesse, Joerg Wiedenmann, and Christian R. Voolstra. "SymPortal: A novel analytical framework and platform for coral algal symbiont next‐generation sequencing ITS2 profiling." Molecular ecology resources 19;1063-1080 (2019).</p>
-                <div id="citation_links">
-                    <a href="{{ url_for('static', filename='resources/bibtex_ref.txt') }}">BibTeX</a>
-                    <a href="{{ url_for('static', filename='resources/symportal_endnote_ref.enw') }}">EndNote</a>
-                    <a href="{{ url_for('static', filename='resources/symportal_refman_ref.ris') }}">RefMan</a>
-                </div>
-
-            </div>
-        </div>
-
-    </section>
-
-    <footer class="bg-dark">
-        <p>SymPortal: a novel analytical framework and platform for coral algal symbiont next-generation sequencing ITS2 profiling</p>
-        <p>Hosted by the <a href="https://padlet.com/chrisvoolstra/tddb7auy6n961um7">Reef Genomics Laboratory, University of Konstanz</a></p>
-        <p>Collaborators: <a href="https://www.southampton.ac.uk/oes/research/facilities/corals.page">The Coral Reef Laboratory, Univerisity of Southampton</a>;
-						    <a href="https://nyuad.nyu.edu/en/research/centers-labs-and-projects/marine-biology-lab.html">Marine Biology Lab, NYU Abu Dhabi</a>;
-							<a href="http://www.personal.psu.edu/tcl3/">The Symbiosis Ecology and Evolution Laboratory, Penn State</a>;</p>
-        <p>Images: <a href="https://rsrc.kaust.edu.sa/Pages/Radecker.aspx">N. Raedecker</a>, <a href="https://rsrc.kaust.edu.sa/Pages/Pogoreutz.aspx">C. Pogoreutz</a>, <a href="https://rsrc.kaust.edu.sa/Pages/Gegner.aspx">H. Gegner</a>. Acknowledgements logo: Alex Mercière.</p>
-        <br>
-        <p>Contact: <a href="mailto:{{ email_address }}?Subject=new submission enquiry">{{ email_address }}</a></p>
-    </footer>
-    
-
-    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>
