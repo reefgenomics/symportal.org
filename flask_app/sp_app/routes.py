@@ -92,7 +92,7 @@ def get_study_by_name_from_orm_study_list(study_name_to_match):
     assert (len(study) == 1)
     return study[0]
 
-@app.route('/data_explorer/', methods=['POST'])
+@app.route('/data_explorer/', methods=['GET', 'POST'])
 def data_explorer():
     # get the google maps api key to be used
     map_key = os.environ.get('GOOGLE_MAPS_API_KEY')
