@@ -1,13 +1,35 @@
-from flask import render_template, request, redirect, flash, url_for, jsonify, send_from_directory
-from sp_app import app, db
 import os
+import json
+from flask import (render_template,
+                   request,
+                   redirect,
+                   flash, url_for,
+                   jsonify,
+                   send_from_directory)
+from flask_login import (current_user,
+                         login_user,
+                         logout_user,
+                         login_required)
+from sp_app import app, db
 from sp_app.forms import LoginForm, ChangePassword
-from flask_login import current_user, login_user, logout_user, login_required
-from sp_app.models import ReferenceSequence, SPDataSet, DataSetSample, DataAnalysis, CladeCollection, AnalysisType, Study, SPUser, Submission
+from sp_app.models import (ReferenceSequence,
+                           SPDataSet,
+                           DataSetSample,
+                           DataAnalysis,
+                           CladeCollection,
+                           AnalysisType,
+                           Study,
+                           SPUser,
+                           Submission)
 from werkzeug.urls import url_parse
 from sqlalchemy.orm.exc import NoResultFound
-import json
-from sp_app.datasheet_check import DatasheetChecker, DatasheetGeneralFormattingError, AddedFilesError, UploadedFilesError, DateFormatError, LatLonError
+
+from sp_app.datasheet_check import (DatasheetChecker,
+                                    DatasheetGeneralFormattingError,
+                                    AddedFilesError,
+                                    UploadedFilesError,
+                                    DateFormatError,
+                                    LatLonError)
 import shutil
 import traceback
 import ntpath
@@ -96,12 +118,27 @@ def get_study_by_name_from_orm_study_list(study_name_to_match):
 def data_explorer():
     # get the google maps api key to be used
     map_key = os.environ.get('GOOGLE_MAPS_API_KEY')
-    # Here we are going to load the data_explorer page
-    # We will need to provide the database object that represents the study_to_load string
-    # provided by the request.
-    # We will also need to provide a list of studies to load in the dataexplorer drop
-    # down that allows users to switch between the DataSet that they are viewing
-    study_to_load = get_study_by_name_from_orm_study_list(study_name_to_match=request.form.get('study_to_load'))
+
+    # Get the study name from the query parameter 'Study'
+    # For example data_explorer/?Study=
+    study_name = request.args.get('Study')
+    # If the 'study' parameter is not provided
+    if study_name:
+        study_to_load = Study.query.filter(Study.name == study_name).one()
+    else:
+        # Here we are going to load the data_explorer page
+        # We will need to provide the database object that represents the study_to_load string
+        # provided by the request.
+        # We will also need to provide a list of studies to load in the dataexplorer drop
+        # down that allows users to switch between the DataSet that they are viewing
+        try:
+            study_to_load = get_study_by_name_from_orm_study_list(
+                study_name_to_match=request.form.get('study_to_load'))
+        except AssertionError:
+            # Logic to open Data Explorer directly from Link
+            default_study = 'Ziegler_et_al_2017'
+            study_to_load = Study.query.filter(Study.name == default_study).one()
+
     # The other studies should be those that are:
     # a - published
     # b - have dataexplorer data
@@ -120,6 +157,7 @@ def data_explorer():
         published_and_authorised_studies = Study.query.filter(Study.data_explorer==True, Study.display_online==True)\
             .filter(or_(Study.is_published==True, Study.users.contains(sp_user)))\
             .filter(Study.name != study_to_load.name).all()
+
     return render_template('data_explorer.html', study_to_load=study_to_load,
                            published_and_authorised_studies=published_and_authorised_studies, map_key=map_key)
 
@@ -134,7 +172,11 @@ def get_study_data(study_name, file_path):
     # If the study requested is published, send the study_data.js
     file_dir = os.path.join(EXPLORER_DATA_DIR, study_name, os.path.dirname(file_path))
     filename = ntpath.basename(file_path)
-    study_obj = get_study_by_name_from_orm_study_list(study_name_to_match=study_name)
+
+    try:
+        study_obj = get_study_by_name_from_orm_study_list(study_name_to_match=study_name)
+    except AssertionError:
+        study_obj = Study.ob
 
     # NB if the current user is anonymous and we try to call .is_admin, we get an attribute error
     if not study_obj.is_published:
