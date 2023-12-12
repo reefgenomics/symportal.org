@@ -472,7 +472,7 @@ def _check_submission():
                     'message': '<strong class="text-danger">ERROR: an unexpected error has occured when trying to run QC on your submission.</strong><br>'
                                'Please ensure that you are uploading a properly formatted datasheet.<br>'
                                'If the error persists, please get in contact at: '
-                               '<a href="mailto:{{ email_address }}?Subject=submission error">{{ email_address }}</a>'
+                               f"{os.getenv('CONTACT_EMAIL_ADDRESS')}<br>"
                                f'The full backend traceback is:<br><br>{tb}',
                     "error_type": "unhandled_error",
                     "response_type": "datasheet",
@@ -563,7 +563,7 @@ def _check_submission():
                     'message': '<strong class="text-danger">ERROR: an unexpected error has occured when trying to run QC on your submission.</strong><br>'
                                'Please ensure that you are uploading a properly formatted datasheet.<br>'
                                'If the error persists, please get in contact at: '
-                               '<a href="mailto:{{ email_address }}?Subject=submission error">{{ email_address }}</a>'
+                               f"{os.getenv('CONTACT_EMAIL_ADDRESS')}<br>"
                                f'The full backend traceback is:<br><br>{tb}',
                     "error_type": "unhandled_error",
                     "response_type": "datasheet",
