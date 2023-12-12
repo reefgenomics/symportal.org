@@ -134,9 +134,6 @@ class DatasheetChecker:
                 data={"error_type": "df_empty"}
             )
 
-        # Check for NAs
-        self._ensure_no_nas_in_mandatory_columns()
-
         self._format_sample_names()
 
         self._check_valid_file_names()
@@ -213,6 +210,9 @@ class DatasheetChecker:
             .str.lstrip().str.replace(' ', '_').str.replace('/', '_').str.replace('α', 'alpha').str.replace('β', 'beta')
 
     def check_valid_seq_files_added(self):
+        # Check for NAs
+        self._ensure_no_nas_in_mandatory_columns()
+
         self._format_sample_names()
 
         self.sample_meta_info_df.set_index('sample_name', inplace=True, drop=True)
