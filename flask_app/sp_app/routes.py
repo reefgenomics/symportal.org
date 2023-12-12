@@ -471,8 +471,8 @@ def _check_submission():
                     'error': True,
                     'message': '<strong class="text-danger">ERROR: an unexpected error has occured when trying to run QC on your submission.</strong><br>'
                                'Please ensure that you are uploading a properly formatted datasheet.<br>'
-                               'If the error persists, please get in contact at:<br>'
-                               '&#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;<br>'
+                               'If the error persists, please get in contact at: '
+                               '<a href="mailto:{{ email_address }}?Subject=submission error">{{ email_address }}</a>'
                                f'The full backend traceback is:<br><br>{tb}',
                     "error_type": "unhandled_error",
                     "response_type": "datasheet",
@@ -562,8 +562,8 @@ def _check_submission():
                     'error': True,
                     'message': '<strong class="text-danger">ERROR: an unexpected error has occured when trying to run QC on your submission.</strong><br>'
                                'Please ensure that you are uploading a properly formatted datasheet.<br>'
-                               'If the error persists, please get in contact at:<br>'
-                               '&#098;&#101;&#110;&#106;&#097;&#109;&#105;&#110;&#099;&#099;&#104;&#117;&#109;&#101;&#064;&#103;&#109;&#097;&#105;&#108;&#046;&#099;&#111;&#109;<br>'
+                               'If the error persists, please get in contact at: '
+                               '<a href="mailto:{{ email_address }}?Subject=submission error">{{ email_address }}</a>'
                                f'The full backend traceback is:<br><br>{tb}',
                     "error_type": "unhandled_error",
                     "response_type": "datasheet",
