@@ -127,14 +127,16 @@ class DatasheetChecker:
         self.date_dict = {}
 
     def do_general_format_check(self):
-        # drop any cells in which the sample name is null
-        self.sample_meta_info_df = self.sample_meta_info_df[~pd.isnull(self.sample_meta_info_df['sample_name'])]
         if self.sample_meta_info_df.empty:
             raise DatasheetGeneralFormattingError(
                 message='<strong class="text-danger">The datasheet appears to be empty.</strong><br>'
                         'Please fix this problem and upload again.',
                 data={"error_type": "df_empty"}
             )
+
+        # Check for NAs
+        self._ensure_no_nas_in_mandatory_columns()
+
         self._format_sample_names()
 
         self._check_valid_file_names()
@@ -211,8 +213,6 @@ class DatasheetChecker:
             .str.lstrip().str.replace(' ', '_').str.replace('/', '_').str.replace('α', 'alpha').str.replace('β', 'beta')
 
     def check_valid_seq_files_added(self):
-        # drop any cells in which the sample name is null
-        self.sample_meta_info_df = self.sample_meta_info_df[~pd.isnull(self.sample_meta_info_df['sample_name'])]
         self._format_sample_names()
 
         self.sample_meta_info_df.set_index('sample_name', inplace=True, drop=True)
@@ -240,9 +240,30 @@ class DatasheetChecker:
 
         self._replace_null_vals_in_meta_info_df()
 
-        
 
-        
+    def _ensure_no_nas_in_mandatory_columns(self):
+        df = self.sample_meta_info_df
+        columns_to_check = [
+            'sample_name', 'fastq_fwd_file_name', 'fastq_rev_file_name',
+            'sample_type', 'host_phylum', 'host_class', 'host_order',
+            'host_family', 'host_genus', 'host_species',
+            'collection_latitude', 'collection_longitude',
+            'collection_date', 'collection_depth'
+        ]
+
+        # Check for missing values only in the specified columns
+        missing_values = df[columns_to_check].isna().any()
+        # Get the columns with missing values
+        columns_with_missing_values = missing_values[
+            missing_values].index.tolist()
+        # Raise the error if we have some columns with NAs
+        if columns_with_missing_values:
+            raise DatasheetGeneralFormattingError(
+                message=f'<strong class="text-danger">Invalid file name.</strong><br>'
+                        f'Columns with missing values: '
+                        f'{columns_with_missing_values}.',
+                data={"error_type": "invalid_file_format"}
+            )
 
     def _check_date_format(self):
         """
