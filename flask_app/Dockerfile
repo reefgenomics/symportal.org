@@ -20,8 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy logrotate configuration file
 COPY ./cron/symportal.logrotate /etc/logrotate.d/symportal.logrotate
-# Copy example dataset that is hosted in the Symportal machine
-COPY /mnt/common/smith_et_al_ISMEJ_example_data.zip /app/sp_app/static/resources
 # Copy the rest of the application code
 COPY . .
 
