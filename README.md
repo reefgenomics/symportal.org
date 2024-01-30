@@ -1,4 +1,4 @@
-# SymPortal-2.0
+# SymPortal.org
 
 ## Get Started
 
