@@ -194,10 +194,10 @@ class SPDataAnalysis:
 
         def _clade_f_associations(self):
             if 'F1' in self.maj_seq_names:
-                self.assigned_species.append('S. kawagutii')
+                self.assigned_species.append('Fugacium kawagutii') # S. kawagutii
 
         def _clade_e_associations(self):
-            self.assigned_species.append('S. voratum')
+            self.assigned_species.append('Fugacium voratum') # S. voratum
 
         def _clade_d_associations(self):
             # I have decided that we are not going to take into account the abundance of non-maj intragenomic
@@ -207,46 +207,46 @@ class SPDataAnalysis:
             # We are also giving the researcher the average abundances and SDs for each output type
             if 'D1' in self.maj_seq_names:
                 if 'D4' not in self.all_seq_names:
-                    self.assigned_species.append('S. glynnii')
+                    self.assigned_species.append('Durusdinium glynnii') # S. glynnii
                 else:  # There is a significant abundance of D4
                     if 'D6' in self.all_seq_names:
                         # Then there is a significant amount of D6
-                        self.assigned_species.extend(['S. glynnii', 'S. trenchii'])
+                        self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii']) # 'S. glynnii', 'S. trenchii'
                     else:
                         # THere is D1, D4 but not D6
-                        self.assigned_species.append('S. trenchii')
+                        self.assigned_species.append('Durusdinium trenchii') # 'S. trenchii'
             if 'D8' in self.maj_seq_names or 'D12' in self.maj_seq_names or 'D13' in self.maj_seq_names:
-                self.assigned_species.append('S. eurythalpos')
+                self.assigned_species.append('Durusdinium eurythalpos') # 'S. eurythalpos'
             if 'D15' in self.maj_seq_names:
-                self.assigned_species.append('S. boreum')
+                self.assigned_species.append('Durusdinium boreum') # 'S. boreum'
 
         def _clade_c_associations(self):
             if 'C1' in self.maj_seq_names:
-                self.assigned_species.append('S. goreaui')
+                self.assigned_species.append('Cladocopium goreaui') # 'S. goreaui'
             if 'C3' in self.all_seq_names and 'C3gulf' in self.all_seq_names:
-                self.assigned_species.append('S. thermophilum')
+                self.assigned_species.append('Cladocopium thermophilum') # 'S. thermophilum'
 
         def _clade_b_associations(self):
             if 'B1' in self.maj_seq_names:
-                self.assigned_species.extend(['S. minutum', 'S. antillogorgium', 'S. pseudominutum'])
+                self.assigned_species.extend(['Breviolum minutum', 'Breviolum antillogorgium', 'Breviolum pseudominutum']) # 'S. minutum', 'S. antillogorgium', 'S. pseudominutum'
             if 'B2' in self.maj_seq_names:
-                self.assigned_species.append('S. psygmophilum')
+                self.assigned_species.append('Breviolum psygmophilum') # 'S. psygmophilum'
             if 'B4' in self.maj_seq_names:
-                self.assigned_species.append('S. muscatinei')
+                self.assigned_species.append('Breviolum muscatinei') # 'S. muscatinei'
             if 'B7' in self.maj_seq_names or 'B13' in self.maj_seq_names:
-                self.assigned_species.append('S. endomadracis')
+                self.assigned_species.append('Breviolum endomadracis') #  'S. endomadracis'
             if 'B2a' in self.maj_seq_names:
-                self.assigned_species.append('S. aenigmaticum')
+                self.assigned_species.append('Breviolum aenigmaticum') # 'S. aenigmaticum'
 
         def _clade_a_associations(self):
             if 'A1' in self.maj_seq_names:
-                self.assigned_species.append('S. microadriaticum')
+                self.assigned_species.append('Symbiodinium microadriaticum') # 'S. microadriaticum'
             if 'A2' in self.maj_seq_names:
-                self.assigned_species.append('S. pilosum')
+                self.assigned_species.append('Symbiodinium pilosum') # 'S. pilosum'
             if 'A3' in self.maj_seq_names:
-                self.assigned_species.extend(['S. natans', 'S. tridacnidorum'])
+                self.assigned_species.extend(['Symbiodinium natans', 'Symbiodinium tridacnidorum']) # 'S. natans', 'S. tridacnidorum'
             if 'A4' in self.maj_seq_names:
-                self.assigned_species.append('S. linucheae')
+                self.assigned_species.append('Symbiodinium linucheae') # 'S. linucheae'
 
     def _name_divs(self):
         if sp_config.system_type == 'remote':
@@ -256,7 +256,7 @@ class SPDataAnalysis:
             print('\nDIV naming complete')
         else:
             print('Automatic sequence name generation is currently disabled for local instances of SymPortal.\n'
-                  'This is to prevent naming conlifcts between the remote and the '
+                  'This is to prevent naming conflicts between the remote and the '
                   'local instances of SymPortal from arising\n')
 
     class DIVNamer:
