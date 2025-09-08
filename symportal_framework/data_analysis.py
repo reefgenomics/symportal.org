@@ -207,10 +207,10 @@ class SPDataAnalysis:
 
         def _clade_e_associations(self):
             # Probable species association based on ITS2 sequence types
-            if 'E1' in self.maj_seq_names:
+            if 'E' in self.maj_seq_names:
                 self.assigned_species.append('Effrenium voratum')
-            else:
-                self.assigned_species.append('Fugacium voratum')  # Default for E clade
+            # else:
+            #     self.assigned_species.append('Fugacium voratum')  # Default for E clade
 
         def _clade_d_associations(self):
             # I have decided that we are not going to take into account the abundance of non-maj intragenomic
@@ -306,23 +306,21 @@ class SPDataAnalysis:
                 self.assigned_species.append('Breviolum dendrogyrum')
             if 'B2' in self.maj_seq_names:
                 self.assigned_species.append('Breviolum psygmophilum')
-            if 'B4' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum muscatinei') # 'S. muscatinei'
+            # if 'B4' in self.maj_seq_names:
+            #     self.assigned_species.append('Breviolum muscatinei') # 'S. muscatinei'
             if 'B7' in self.maj_seq_names or 'B13' in self.maj_seq_names:
                 self.assigned_species.append('Breviolum endomadracis') #  'S. endomadracis'
             if 'B2a' in self.maj_seq_names:
                 self.assigned_species.append('Breviolum aenigmaticum') # 'S. aenigmaticum'
-            if 'B7' in self.maj_seq_names or 'B13' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum endomadracis')
             if 'B14' in self.maj_seq_names or 'B14a' in self.maj_seq_names or 'B24' in self.maj_seq_names:
                 self.assigned_species.append('Breviolum faviinorum')
             if 'B20' in self.maj_seq_names:
                 self.assigned_species.append('Breviolum meandrinium')
             
-            # Check for B
-            for seq_name in self.maj_seq_names:
-                if 'B' in seq_name:
-                    self.assigned_species.append('Breviolum aenigmaticum')
+            # # Check for B
+            # for seq_name in self.maj_seq_names:
+            #     if 'B' in seq_name:
+            #         self.assigned_species.append('Breviolum aenigmaticum')
 
         def _clade_a_associations(self):
             # Probable species association based on ITS2 sequence types
@@ -332,8 +330,8 @@ class SPDataAnalysis:
                 self.assigned_species.append('Symbiodinium pilosum') # 'S. pilosum'
             if 'A3' in self.maj_seq_names:
                 self.assigned_species.extend(['Symbiodinium natans', 'Symbiodinium tridacnidorum']) # 'S. natans', 'S. tridacnidorum'
-            if 'A4' in self.maj_seq_names:
-                self.assigned_species.append('Symbiodinium linucheae') # 'S. linucheae'
+            # if 'A4' in self.maj_seq_names:
+            #     self.assigned_species.append('Symbiodinium linucheae') # 'S. linucheae'
             if 'A13' in self.maj_seq_names:
                 self.assigned_species.append('Symbiodinium necroappetens') # 'S. necroappetens'
 
