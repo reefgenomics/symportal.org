@@ -157,3 +157,9 @@ cython_debug/
 
 # PyCharm
 .idea/
+
+.env*
+*.bak
+*.yml
+
+*.OG.*
