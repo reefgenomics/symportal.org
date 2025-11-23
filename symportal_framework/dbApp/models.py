@@ -273,8 +273,9 @@ class AnalysisType(models.Model):
     # I will make set and get methods for the footprint
     # This will be a list of refSeqs that make up the footprint in order of their abundance when type first defined
     # This is a commar separated string of the uids of the ref seqs that define the type
-    ordered_footprint_list = models.CharField(max_length=200, null=True)
-    # Same for listOfMajs
+    # FIXED: Changed from max_length=200 to max_length=10000
+    # With large multi-dataset analyses, footprints can have 100+ reference sequences
+    ordered_footprint_list = models.CharField(max_length=10000, null=True)    # Same for listOfMajs
     # set() of refseqs that are Majs in each of the CCs this type was initially identified in.
     # Note that this is therefore in no particular order
     majority_reference_sequence_set = models.CharField(max_length=40, null=True)
@@ -293,7 +294,8 @@ class AnalysisType(models.Model):
     name = models.CharField(max_length=1000, null=True)
 
     # The list of speceis that this type is associated with
-    species = models.CharField(max_length=200, null=True)
+    # FIXED: Changed from max_length=200 to max_length=1000
+    species = models.CharField(max_length=1000, null=True)
 
     # this list will keep track of which of the defining intras of this type are 'unlocked' i.e. at least one
     # of the instances of that intra were found at <5%. We will use this list to the 'artefact type creation'
