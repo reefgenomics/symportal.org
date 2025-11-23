@@ -142,15 +142,20 @@ class SPDataAnalysis:
 
     def _associate_species_designations(self):
         for vat in self.virtual_object_manager.vat_manager.vat_dict.values():
-            # For the time being I am disabling the species association
-            # We may reimplement this if we can get a separate species description
-            # platform up and running
-            # I am disabling it in the _associate_species_info_to_vat method of 
-            # the SpeciesAssociation class.
+            # PROBABLE SPECIES ASSOCIATION: Now enabled based on comprehensive ITS2 sequence mappings
+            # Associates probable species names to Virtual Analysis Types based on sequence types
+            # These associations represent probable taxonomic assignments and should be interpreted as such
             species_association = self.SpeciesAssociation(vat=vat)
             species_association.assign_species()
 
     class SpeciesAssociation:
+        """
+        PROBABLE SPECIES ASSOCIATION based on ITS2 sequence types
+        
+        This class associates probable species names to Virtual Analysis Types (VATs) 
+        based on the presence of specific ITS2 sequence types. These associations 
+        represent probable taxonomic assignments and should be interpreted as such.
+        """
         def __init__(self, vat):
             self.vat = vat
             self.assigned_species = []
@@ -178,26 +183,34 @@ class SPDataAnalysis:
             elif self.vat.clade == 'F':
                 self._clade_f_associations()
             elif self.vat.clade == 'G':
-                pass
+                self._clade_g_associations()
             elif self.vat.clade == 'H':
-                pass
+                self._clade_h_associations()
             elif self.vat.clade == 'I':
-                pass
+                self._clade_i_associations()
 
         def _associate_species_info_to_vat(self):
-            # Disable species association
-            self.vat.species = 'None'
-            # if not self.assigned_species:  # If no suggested species have been associated
-            #     self.vat.species = 'None'
-            # else:
-            #     self.vat.species = ','.join(self.assigned_species)
+            # Enable probable species association based on ITS2 sequence types
+            if not self.assigned_species:  # If no suggested species have been associated
+                self.vat.species = 'None'
+            else:
+                self.vat.species = ','.join(self.assigned_species)
 
         def _clade_f_associations(self):
+            # Probable species association based on ITS2 sequence types
             if 'F1' in self.maj_seq_names:
-                self.assigned_species.append('S. kawagutii')
+                self.assigned_species.append('Fugacium kawagutii')
+            if 'F3.7' in self.maj_seq_names:
+                self.assigned_species.append('Freudenthalidium heronense')
+            if 'F3.8' in self.maj_seq_names:
+                self.assigned_species.append('Freudenthalidium endolithicum')
 
         def _clade_e_associations(self):
-            self.assigned_species.append('S. voratum')
+            # Probable species association based on ITS2 sequence types
+            if 'E' in self.maj_seq_names:
+                self.assigned_species.append('Effrenium voratum')
+            # else:
+            #     self.assigned_species.append('Fugacium voratum')  # Default for E clade
 
         def _clade_d_associations(self):
             # I have decided that we are not going to take into account the abundance of non-maj intragenomic
@@ -207,46 +220,135 @@ class SPDataAnalysis:
             # We are also giving the researcher the average abundances and SDs for each output type
             if 'D1' in self.maj_seq_names:
                 if 'D4' not in self.all_seq_names:
-                    self.assigned_species.append('S. glynnii')
+                    self.assigned_species.append('Durusdinium glynnii') # S. glynnii
                 else:  # There is a significant abundance of D4
                     if 'D6' in self.all_seq_names:
                         # Then there is a significant amount of D6
-                        self.assigned_species.extend(['S. glynnii', 'S. trenchii'])
+                        self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii']) # 'S. glynnii', 'S. trenchii'
                     else:
                         # THere is D1, D4 but not D6
-                        self.assigned_species.append('S. trenchii')
+                        self.assigned_species.append('Durusdinium trenchii') # 'S. trenchii'
             if 'D8' in self.maj_seq_names or 'D12' in self.maj_seq_names or 'D13' in self.maj_seq_names:
-                self.assigned_species.append('S. eurythalpos')
+                self.assigned_species.append('Durusdinium eurythalpos') # 'S. eurythalpos'
             if 'D15' in self.maj_seq_names:
-                self.assigned_species.append('S. boreum')
+                self.assigned_species.append('Durusdinium boreum') # 'S. boreum'
+            
+            # Additional D clade associations - probable species association
+            if 'D1a' in self.maj_seq_names or 'D1-4' in self.maj_seq_names or 'D1-6' in self.maj_seq_names:
+                self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii'])
+            if 'D1.1' in self.maj_seq_names:
+                self.assigned_species.append('Miliolidium leei')
+            
+            # Check for specific D1 variants
+            for seq_name in self.maj_seq_names:
+                if 'D1' in seq_name:
+                    self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii'])
 
         def _clade_c_associations(self):
+            # Probable species association based on ITS2 sequence types
             if 'C1' in self.maj_seq_names:
-                self.assigned_species.append('S. goreaui')
-            if 'C3' in self.all_seq_names and 'C3gulf' in self.all_seq_names:
-                self.assigned_species.append('S. thermophilum')
+                # Check for specific C1 variants
+                has_specific_variant = False
+                for seq_name in self.maj_seq_names:
+                    if 'C1' in seq_name:
+                        self.assigned_species.extend(['Cladocopium goreaui', 'Cladocopium latusorum', 'Cladocopium pacificum', 'Cladocopium proliferum', 'Cladocopium vulgare'])
+                        has_specific_variant = True
+                        
+                # If no specific variant, use general C1 association
+                if not has_specific_variant:
+                    self.assigned_species.append('Cladocopium goreaui')
+            
+            if 'C1b-c' in self.maj_seq_names or 'C1c-ff' in self.maj_seq_names or 'C1j' in self.maj_seq_names:
+                self.assigned_species.append('Cladocopium latusorum')
+            if 'C1d' in self.maj_seq_names or 'C1t' in self.maj_seq_names:
+                self.assigned_species.append('Cladocopium pacificum')
+            if 'C2' in self.maj_seq_names:
+                self.assigned_species.append('Cladocopium infistulum')
+            
+            if 'C3' in self.all_seq_names:
+                # Check for specific C3 variants
+                has_specific_variant = False
+                for seq_name in self.all_seq_names:
+                    if 'C3' in seq_name:
+                        self.assigned_species.extend(['Cladocopium madreporum', 'Cladocopium patulum', 'Cladocopium sodalum', 'Cladocopium thermophilum'])
+                        has_specific_variant = True
+                    elif 'C3_Gulf' in seq_name:
+                        self.assigned_species.append('Cladocopium thermophilum')
+                        has_specific_variant = True
+                # Original logic for C3gulf
+                if 'C3gulf' in self.all_seq_names:
+                    self.assigned_species.append('Cladocopium thermophilum')
+            
+            if 'C3u' in self.maj_seq_names:
+                self.assigned_species.append('Cladocopium patulum')
+            if 'C40' in self.maj_seq_names:
+                self.assigned_species.append('Cladocopium madreporum')
+            if 'C42' in self.maj_seq_names or 'C42a' in self.maj_seq_names:
+                self.assigned_species.append('Cladocopium latusorum')
 
         def _clade_b_associations(self):
+            # Probable species association based on ITS2 sequence types
             if 'B1' in self.maj_seq_names:
-                self.assigned_species.extend(['S. minutum', 'S. antillogorgium', 'S. pseudominutum'])
+                # Check for specific B1 variants first
+                has_specific_variant = False
+                for seq_name in self.maj_seq_names:
+                    if 'B1' in seq_name:
+                        self.assigned_species.extend(['Breviolum aenigmaticum', 'Breviolum dendrogyrum', 'Breviolum meandrinium', 'Breviolum minutum', 'Breviolum pseudominutum'])
+                        has_specific_variant = True
+                    # elif 'B1' in seq_name:
+                    #     self.assigned_species.append('Breviolum faviinorum')
+                    #     has_specific_variant = True
+                # If no specific B1 variant found, use general B1 association
+                if not has_specific_variant:
+                    self.assigned_species.extend(['Breviolum minutum', 'Breviolum antillogorgium', 'Breviolum pseudominutum'])
+            
+            if 'B1k' in self.maj_seq_names:
+                self.assigned_species.append('Breviolum dendrogyrum')
             if 'B2' in self.maj_seq_names:
-                self.assigned_species.append('S. psygmophilum')
-            if 'B4' in self.maj_seq_names:
-                self.assigned_species.append('S. muscatinei')
+                self.assigned_species.append('Breviolum psygmophilum')
+            # if 'B4' in self.maj_seq_names:
+            #     self.assigned_species.append('Breviolum muscatinei') # 'S. muscatinei'
             if 'B7' in self.maj_seq_names or 'B13' in self.maj_seq_names:
-                self.assigned_species.append('S. endomadracis')
+                self.assigned_species.append('Breviolum endomadracis') #  'S. endomadracis'
             if 'B2a' in self.maj_seq_names:
-                self.assigned_species.append('S. aenigmaticum')
+                self.assigned_species.append('Breviolum aenigmaticum') # 'S. aenigmaticum'
+            if 'B14' in self.maj_seq_names or 'B14a' in self.maj_seq_names or 'B24' in self.maj_seq_names:
+                self.assigned_species.append('Breviolum faviinorum')
+            if 'B20' in self.maj_seq_names:
+                self.assigned_species.append('Breviolum meandrinium')
+            
+            # # Check for B
+            # for seq_name in self.maj_seq_names:
+            #     if 'B' in seq_name:
+            #         self.assigned_species.append('Breviolum aenigmaticum')
 
         def _clade_a_associations(self):
+            # Probable species association based on ITS2 sequence types
             if 'A1' in self.maj_seq_names:
-                self.assigned_species.append('S. microadriaticum')
+                self.assigned_species.append('Symbiodinium microadriaticum') # 'S. microadriaticum'
             if 'A2' in self.maj_seq_names:
-                self.assigned_species.append('S. pilosum')
+                self.assigned_species.append('Symbiodinium pilosum') # 'S. pilosum'
             if 'A3' in self.maj_seq_names:
-                self.assigned_species.extend(['S. natans', 'S. tridacnidorum'])
-            if 'A4' in self.maj_seq_names:
-                self.assigned_species.append('S. linucheae')
+                self.assigned_species.extend(['Symbiodinium natans', 'Symbiodinium tridacnidorum']) # 'S. natans', 'S. tridacnidorum'
+            # if 'A4' in self.maj_seq_names:
+            #     self.assigned_species.append('Symbiodinium linucheae') # 'S. linucheae'
+            if 'A13' in self.maj_seq_names:
+                self.assigned_species.append('Symbiodinium necroappetens') # 'S. necroappetens'
+
+        def _clade_g_associations(self):
+            # Probable species association based on ITS2 sequence types
+            # Currently no specific associations defined for clade G
+            pass
+
+        def _clade_h_associations(self):
+            # Probable species association based on ITS2 sequence types
+            # Currently no specific associations defined for clade H
+            pass
+
+        def _clade_i_associations(self):
+            # Probable species association based on ITS2 sequence types
+            # Currently no specific associations defined for clade I
+            pass
 
     def _name_divs(self):
         if sp_config.system_type == 'remote':
@@ -256,7 +358,7 @@ class SPDataAnalysis:
             print('\nDIV naming complete')
         else:
             print('Automatic sequence name generation is currently disabled for local instances of SymPortal.\n'
-                  'This is to prevent naming conlifcts between the remote and the '
+                  'This is to prevent naming conflicts between the remote and the '
                   'local instances of SymPortal from arising\n')
 
     class DIVNamer:
