@@ -158,15 +158,13 @@ class SPDataAnalysis:
         """
         def __init__(self, vat):
             self.vat = vat
-            self.assigned_species = []
+            self.assigned_species = set()  # Use set to avoid duplicates
             self.maj_seq_names = [rs.name for rs in self.vat.majority_reference_sequence_obj_set]
             self.all_seq_names = [rs.name for rs in self.vat.footprint_as_ref_seq_objs_set]
 
         def assign_species(self):
             """For each analysis type check and assign the associated species"""
-
             self._designate_species()
-
             self._associate_species_info_to_vat()
 
         def _designate_species(self):
@@ -190,165 +188,141 @@ class SPDataAnalysis:
                 self._clade_i_associations()
 
         def _associate_species_info_to_vat(self):
-            # Enable probable species association based on ITS2 sequence types
-            if not self.assigned_species:  # If no suggested species have been associated
+            if not self.assigned_species:
                 self.vat.species = 'None'
             else:
-                self.vat.species = ','.join(self.assigned_species)
+                # Sort for consistent output
+                self.vat.species = ','.join(sorted(self.assigned_species))
+
+        def _seq_matches_exactly(self, pattern, seq_name):
+            """Check if seq_name matches the pattern exactly or as a variant (e.g., C1 matches C1, C1a, C1b but not C10, C15)"""
+            if seq_name == pattern:
+                return True
+            # Match variants like C1a, C1b, C1-4 but not C10, C15
+            if seq_name.startswith(pattern):
+                # Check if the next character is not a digit (to avoid C1 matching C10, C15)
+                remainder = seq_name[len(pattern):]
+                if remainder and not remainder[0].isdigit():
+                    return True
+            return False
+
+        def _has_exact_seq(self, pattern, seq_list):
+            """Check if pattern exists exactly in seq_list"""
+            return pattern in seq_list
 
         def _clade_f_associations(self):
-            # Probable species association based on ITS2 sequence types
-            if 'F1' in self.maj_seq_names:
-                self.assigned_species.append('Fugacium kawagutii')
-            if 'F3.7' in self.maj_seq_names:
-                self.assigned_species.append('Freudenthalidium heronense')
-            if 'F3.8' in self.maj_seq_names:
-                self.assigned_species.append('Freudenthalidium endolithicum')
+            if self._has_exact_seq('F1', self.maj_seq_names):
+                self.assigned_species.add('Fugacium kawagutii')
+            if self._has_exact_seq('F3.7', self.maj_seq_names):
+                self.assigned_species.add('Freudenthalidium heronense')
+            if self._has_exact_seq('F3.8', self.maj_seq_names):
+                self.assigned_species.add('Freudenthalidium endolithicum')
 
         def _clade_e_associations(self):
-            # Probable species association based on ITS2 sequence types
-            if 'E' in self.maj_seq_names:
-                self.assigned_species.append('Effrenium voratum')
-            # else:
-            #     self.assigned_species.append('Fugacium voratum')  # Default for E clade
+            if self._has_exact_seq('E', self.maj_seq_names):
+                self.assigned_species.add('Effrenium voratum')
 
         def _clade_d_associations(self):
-            # I have decided that we are not going to take into account the abundance of non-maj intragenomic
-            # defining sequences. e.g. D6 when calling associated species.
-            # This is because there can be a large difference sample to sample in the abundance of the sequences
-            # Rather we will assign both clade D species if the required sequences are present
-            # We are also giving the researcher the average abundances and SDs for each output type
-            if 'D1' in self.maj_seq_names:
-                if 'D4' not in self.all_seq_names:
-                    self.assigned_species.append('Durusdinium glynnii') # S. glynnii
-                else:  # There is a significant abundance of D4
-                    if 'D6' in self.all_seq_names:
-                        # Then there is a significant amount of D6
-                        self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii']) # 'S. glynnii', 'S. trenchii'
+            # D1 logic with proper variant handling
+            if self._has_exact_seq('D1', self.maj_seq_names):
+                if not self._has_exact_seq('D4', self.all_seq_names):
+                    self.assigned_species.add('Durusdinium glynnii')
+                else:
+                    if self._has_exact_seq('D6', self.all_seq_names):
+                        self.assigned_species.update(['Durusdinium glynnii', 'Durusdinium trenchii'])
                     else:
-                        # THere is D1, D4 but not D6
-                        self.assigned_species.append('Durusdinium trenchii') # 'S. trenchii'
-            if 'D8' in self.maj_seq_names or 'D12' in self.maj_seq_names or 'D13' in self.maj_seq_names:
-                self.assigned_species.append('Durusdinium eurythalpos') # 'S. eurythalpos'
-            if 'D15' in self.maj_seq_names:
-                self.assigned_species.append('Durusdinium boreum') # 'S. boreum'
+                        self.assigned_species.add('Durusdinium trenchii')
             
-            # Additional D clade associations - probable species association
-            if 'D1a' in self.maj_seq_names or 'D1-4' in self.maj_seq_names or 'D1-6' in self.maj_seq_names:
-                self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii'])
-            if 'D1.1' in self.maj_seq_names:
-                self.assigned_species.append('Miliolidium leei')
+            # D1 variants (D1a, D1-4, D1-6) - associated with both glynnii and trenchii
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['D1a', 'D1-4']):
+                self.assigned_species.add('Durusdinium trenchii')
+
+            if self._has_exact_seq('D1-6', self.maj_seq_names):
+                self.assigned_species.update(['Durusdinium glynnii', 'Durusdinium trenchii'])
             
-            # Check for specific D1 variants
-            for seq_name in self.maj_seq_names:
-                if 'D1' in seq_name:
-                    self.assigned_species.extend(['Durusdinium glynnii', 'Durusdinium trenchii'])
+            if self._has_exact_seq('D1.1', self.maj_seq_names):
+                self.assigned_species.add('Miliolidium leei')
+            
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['D8', 'D12', 'D13']):
+                self.assigned_species.add('Durusdinium eurythalpos')
+            
+            if self._has_exact_seq('D15', self.maj_seq_names):
+                self.assigned_species.add('Durusdinium boreum')
 
         def _clade_c_associations(self):
-            # Probable species association based on ITS2 sequence types
-            if 'C1' in self.maj_seq_names:
-                # Check for specific C1 variants
-                has_specific_variant = False
-                for seq_name in self.maj_seq_names:
-                    if 'C1' in seq_name:
-                        self.assigned_species.extend(['Cladocopium goreaui', 'Cladocopium latusorum', 'Cladocopium pacificum', 'Cladocopium proliferum', 'Cladocopium vulgare'])
-                        has_specific_variant = True
-                        
-                # If no specific variant, use general C1 association
-                if not has_specific_variant:
-                    self.assigned_species.append('Cladocopium goreaui')
+            # C1 exact match - general association
+            if self._has_exact_seq('C1', self.maj_seq_names):
+                self.assigned_species.update(['Cladocopium goreaui', 'Cladocopium latusorum', 'Cladocopium pacificum', 'Cladocopium proliferum', 'Cladocopium vulgare'])
             
-            if 'C1b-c' in self.maj_seq_names or 'C1c-ff' in self.maj_seq_names or 'C1j' in self.maj_seq_names:
-                self.assigned_species.append('Cladocopium latusorum')
-            if 'C1d' in self.maj_seq_names or 'C1t' in self.maj_seq_names:
-                self.assigned_species.append('Cladocopium pacificum')
-            if 'C2' in self.maj_seq_names:
-                self.assigned_species.append('Cladocopium infistulum')
+            # Specific C1 variants
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['C1b-c', 'C1c-ff', 'C1j']):
+                self.assigned_species.add('Cladocopium latusorum')
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['C1d', 'C1t']):
+                self.assigned_species.add('Cladocopium pacificum')
             
-            if 'C3' in self.all_seq_names:
-                # Check for specific C3 variants
-                has_specific_variant = False
-                for seq_name in self.all_seq_names:
-                    if 'C3' in seq_name:
-                        self.assigned_species.extend(['Cladocopium madreporum', 'Cladocopium patulum', 'Cladocopium sodalum', 'Cladocopium thermophilum'])
-                        has_specific_variant = True
-                    elif 'C3_Gulf' in seq_name:
-                        self.assigned_species.append('Cladocopium thermophilum')
-                        has_specific_variant = True
-                # Original logic for C3gulf
-                if 'C3gulf' in self.all_seq_names:
-                    self.assigned_species.append('Cladocopium thermophilum')
+            if self._has_exact_seq('C2', self.maj_seq_names):
+                self.assigned_species.add('Cladocopium infistulum')
             
-            if 'C3u' in self.maj_seq_names:
-                self.assigned_species.append('Cladocopium patulum')
-            if 'C40' in self.maj_seq_names:
-                self.assigned_species.append('Cladocopium madreporum')
-            if 'C42' in self.maj_seq_names or 'C42a' in self.maj_seq_names:
-                self.assigned_species.append('Cladocopium latusorum')
+            # C3 associations
+            if self._has_exact_seq('C3', self.all_seq_names):
+                self.assigned_species.update(['Cladocopium madreporum', 'Cladocopium patulum', 
+                                              'Cladocopium sodalum', 'Cladocopium thermophilum'])
+            
+            # C3 Gulf variant
+            if any('C3gulf' in seq.lower() or 'c3_gulf' in seq.lower() for seq in self.all_seq_names):
+                self.assigned_species.add('Cladocopium thermophilum')
+            
+            if self._has_exact_seq('C3u', self.maj_seq_names):
+                self.assigned_species.add('Cladocopium patulum')
+            if self._has_exact_seq('C40', self.maj_seq_names):
+                self.assigned_species.add('Cladocopium madreporum')
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['C42', 'C42a']):
+                self.assigned_species.add('Cladocopium latusorum')
 
         def _clade_b_associations(self):
-            # Probable species association based on ITS2 sequence types
-            if 'B1' in self.maj_seq_names:
-                # Check for specific B1 variants first
-                has_specific_variant = False
-                for seq_name in self.maj_seq_names:
-                    if 'B1' in seq_name:
-                        self.assigned_species.extend(['Breviolum aenigmaticum', 'Breviolum dendrogyrum', 'Breviolum meandrinium', 'Breviolum minutum', 'Breviolum pseudominutum'])
-                        has_specific_variant = True
-                    # elif 'B1' in seq_name:
-                    #     self.assigned_species.append('Breviolum faviinorum')
-                    #     has_specific_variant = True
-                # If no specific B1 variant found, use general B1 association
-                if not has_specific_variant:
-                    self.assigned_species.extend(['Breviolum minutum', 'Breviolum antillogorgium', 'Breviolum pseudominutum'])
+            # B1 general
+            if self._has_exact_seq('B1', self.maj_seq_names):
+                self.assigned_species.update(['Breviolum minutum', 'Breviolum antillogorgium', 
+                                              'Breviolum pseudominutum'])
             
-            if 'B1k' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum dendrogyrum')
-            if 'B2' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum psygmophilum')
-            # if 'B4' in self.maj_seq_names:
-            #     self.assigned_species.append('Breviolum muscatinei') # 'S. muscatinei'
-            if 'B7' in self.maj_seq_names or 'B13' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum endomadracis') #  'S. endomadracis'
-            if 'B2a' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum aenigmaticum') # 'S. aenigmaticum'
-            if 'B14' in self.maj_seq_names or 'B14a' in self.maj_seq_names or 'B24' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum faviinorum')
-            if 'B20' in self.maj_seq_names:
-                self.assigned_species.append('Breviolum meandrinium')
+            # Specific B1 variants
+            if self._has_exact_seq('B1k', self.maj_seq_names):
+                self.assigned_species.add('Breviolum dendrogyrum')
             
-            # # Check for B
-            # for seq_name in self.maj_seq_names:
-            #     if 'B' in seq_name:
-            #         self.assigned_species.append('Breviolum aenigmaticum')
+            if self._has_exact_seq('B2', self.maj_seq_names):
+                self.assigned_species.add('Breviolum psygmophilum')
+            if self._has_exact_seq('B2a', self.maj_seq_names):
+                self.assigned_species.add('Breviolum aenigmaticum')
+            
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['B7', 'B13']):
+                self.assigned_species.add('Breviolum endomadracis')
+            
+            if any(self._has_exact_seq(seq, self.maj_seq_names) for seq in ['B14', 'B14a', 'B24']):
+                self.assigned_species.add('Breviolum faviinorum')
+            
+            if self._has_exact_seq('B20', self.maj_seq_names):
+                self.assigned_species.add('Breviolum meandrinium')
 
         def _clade_a_associations(self):
-            # Probable species association based on ITS2 sequence types
-            if 'A1' in self.maj_seq_names:
-                self.assigned_species.append('Symbiodinium microadriaticum') # 'S. microadriaticum'
-            if 'A2' in self.maj_seq_names:
-                self.assigned_species.append('Symbiodinium pilosum') # 'S. pilosum'
-            if 'A3' in self.maj_seq_names:
-                self.assigned_species.extend(['Symbiodinium natans', 'Symbiodinium tridacnidorum']) # 'S. natans', 'S. tridacnidorum'
-            # if 'A4' in self.maj_seq_names:
-            #     self.assigned_species.append('Symbiodinium linucheae') # 'S. linucheae'
-            if 'A13' in self.maj_seq_names:
-                self.assigned_species.append('Symbiodinium necroappetens') # 'S. necroappetens'
+            if self._has_exact_seq('A1', self.maj_seq_names):
+                self.assigned_species.add('Symbiodinium microadriaticum')
+            if self._has_exact_seq('A2', self.maj_seq_names):
+                self.assigned_species.add('Symbiodinium pilosum')
+            if self._has_exact_seq('A3', self.maj_seq_names):
+                self.assigned_species.update(['Symbiodinium natans', 'Symbiodinium tridacnidorum'])
+            if self._has_exact_seq('A13', self.maj_seq_names):
+                self.assigned_species.add('Symbiodinium necroappetens')
 
         def _clade_g_associations(self):
-            # Probable species association based on ITS2 sequence types
-            # Currently no specific associations defined for clade G
             pass
 
         def _clade_h_associations(self):
-            # Probable species association based on ITS2 sequence types
-            # Currently no specific associations defined for clade H
             pass
 
         def _clade_i_associations(self):
-            # Probable species association based on ITS2 sequence types
-            # Currently no specific associations defined for clade I
             pass
+
+# ...existing code...
 
     def _name_divs(self):
         if sp_config.system_type == 'remote':
@@ -2612,4 +2586,3 @@ class FootprintDictGenerationCCInfoHolder:
         self.clade_index = clade_index
         self.cc = cc
         self.maj_ref_seq = maj_ref_seq
-
