@@ -4,6 +4,23 @@ import os
 import subprocess
 import sys
 import logging
+import multiprocessing
+import signal
+
+# Configure numpy to use multiple threads for linear algebra operations BEFORE importing numpy
+# This allows the eigenvalue decomposition to use multiple CPU cores
+# Only set if not already configured by user
+try:
+    if 'OMP_NUM_THREADS' not in os.environ:
+        os.environ['OMP_NUM_THREADS'] = str(min(multiprocessing.cpu_count(), 8))  # Cap at 8 to avoid over-subscription
+    if 'OPENBLAS_NUM_THREADS' not in os.environ:
+        os.environ['OPENBLAS_NUM_THREADS'] = str(min(multiprocessing.cpu_count(), 8))
+    if 'MKL_NUM_THREADS' not in os.environ:
+        os.environ['MKL_NUM_THREADS'] = str(min(multiprocessing.cpu_count(), 8))
+except Exception as e:
+    logging.warning(f"Could not configure BLAS threading: {e}")
+
+# Now import numpy and other scientific libraries
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import braycurtis
@@ -17,6 +34,97 @@ from dbApp.models import (
     CladeCollection, CladeCollectionType)
 from exceptions import InsufficientSequencesInAlignment, EigenValsTooSmallError
 
+# Timeout for PCoA calculation in seconds
+PCOA_TIMEOUT = 1200  # Reduced to 20 minutes for faster failure detection
+PCOA_SMALL_TIMEOUT = 180  # 3 minute timeout for small matrices
+
+
+class TimeoutException(Exception):
+    """Raised when PCoA calculation exceeds timeout"""
+    pass
+
+
+def _timeout_handler(signum, frame):
+    """Signal handler for timeout"""
+    raise TimeoutException("PCoA calculation exceeded time limit")
+
+
+def pcoa_with_timeout(dist_array, timeout=PCOA_TIMEOUT, matrix_size_hint=None):
+    """
+    Run PCoA calculation with a timeout to prevent indefinite hanging.
+    Uses signal-based timeout which works in all environments including Docker.
+    
+    Parameters:
+    -----------
+    dist_array : numpy array or DistanceMatrix
+        The distance matrix to analyze
+    timeout : int
+        Timeout in seconds
+    matrix_size_hint : int, optional
+        Size of matrix (for logging)
+    
+    Returns:
+    --------
+    OrdinationResults
+        The PCoA results
+    
+    Raises:
+    -------
+    TimeoutException
+        If calculation exceeds timeout
+    """
+    # Check for numerical issues before attempting PCoA
+    if hasattr(dist_array, 'data'):
+        data = np.asarray(dist_array.data)
+    else:
+        data = np.asarray(dist_array)
+    
+    # Check for NaN or Inf values
+    if np.any(np.isnan(data)) or np.any(np.isinf(data)):
+        raise ValueError("Distance matrix contains NaN or Inf values")
+    
+    # Check for negative values (shouldn't happen with distance matrices)
+    if np.any(data < 0):
+        logging.warning(f"Distance matrix contains negative values. Min: {data.min()}")
+    
+    # Determine matrix size
+    if matrix_size_hint is None:
+        matrix_size = data.shape[0] if len(data.shape) > 1 else int(np.sqrt(len(data)))
+    else:
+        matrix_size = matrix_size_hint
+    
+    # Use shorter timeout for small matrices
+    if matrix_size < 50:
+        actual_timeout = min(timeout, PCOA_SMALL_TIMEOUT)
+    else:
+        # Scale timeout with matrix size for large matrices
+        actual_timeout = max(timeout, int(matrix_size * matrix_size / 100))
+    
+    logging.info(f"Starting PCoA for {matrix_size}x{matrix_size} matrix (timeout: {actual_timeout}s)")
+    sys.stdout.write(f"\rComputing PCoA for {matrix_size}x{matrix_size} matrix...")
+    sys.stdout.flush()
+    
+    # Set up signal-based timeout (works in Docker/containers)
+    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.alarm(actual_timeout)
+    
+    try:
+        result = pcoa(dist_array)
+        signal.alarm(0)  # Cancel the alarm
+        logging.info(f"PCoA completed successfully for {matrix_size}x{matrix_size} matrix")
+        sys.stdout.write(" done\n")
+        sys.stdout.flush()
+        return result
+    except TimeoutException:
+        signal.alarm(0)  # Cancel the alarm
+        logging.error(f"PCoA timed out after {actual_timeout}s for {matrix_size}x{matrix_size} matrix")
+        raise RuntimeError(f"PCoA calculation exceeded {actual_timeout}s timeout. Matrix may have numerical issues.")
+    except Exception as e:
+        signal.alarm(0)  # Cancel the alarm
+        logging.error(f"PCoA failed for {matrix_size}x{matrix_size} matrix: {e}")
+        raise
+    finally:
+        signal.signal(signal.SIGALRM, old_handler)
 
 class BaseUnifracDistPCoACreator:
     """Base class for TypeUnifracDistPCoACreator and SampleUnifracDistPCoACreator.
@@ -142,9 +250,26 @@ class BaseUnifracDistPCoACreator:
         # work through the magnitudes of order and see what the bigest scaler we can work with is
         # whilst still remaining below 1
         # Return the scaler by which we should multiply
+        
+        # Handle edge cases to prevent infinite loops
+        if max_val == 0 and min_val == 0:
+            return 1  # No scaling needed for all-zero matrix
+        
+        if max_val == min_val:
+            return 1  # No scaling needed if all values are identical
+        
+        # If values are extremely small, just return 1 to avoid precision issues
+        if abs(max_val) < 1e-10 and abs(min_val) < 1e-10:
+            return 1
+        
         query = 0.1
         scaler = 10
-        while 1:
+        max_iterations = 100  # Safety limit to prevent infinite loops
+        iterations = 0
+        
+        while iterations < max_iterations:
+            iterations += 1
+            
             if max_val > query:
                 # then we cannot multiply by the scaler
                 # revert back and break
@@ -164,18 +289,36 @@ class BaseUnifracDistPCoACreator:
                 else:
                     scaler *= 10
                     query /= 10
+        
+        # Safety check: if we hit max iterations, just return 1
+        if iterations >= max_iterations:
+            logging.warning(f"_rescale_array hit iteration limit with max_val={max_val}, min_val={min_val}")
+            return 1
+            
         # now scale the df by the scaler unless it is 1
         return scaler
 
     def _scale_and_compute_pcoa(self, wu):
+        logging.info("Scaling distance matrix for PCoA calculation")
         dist_array_scaler = self._rescale_array(max_val=wu.data.max(), min_val=wu.data.min())
         wu_data = wu.data * dist_array_scaler
-        pcoa_output = pcoa(wu_data)
+        
+        # Get matrix size for better logging and timeout scaling
+        matrix_size = wu_data.shape[0] if hasattr(wu_data, 'shape') else len(wu.ids)
+        
+        try:
+            pcoa_output = pcoa_with_timeout(wu_data, timeout=PCOA_TIMEOUT, matrix_size_hint=matrix_size)
+        except Exception as e:
+            logging.error(f"PCoA calculation failed: {e}")
+            raise
+        
         # When the pcoa calculation converts very small eigen values to 0
         # In doing this, if there were not large enougher eigen values,
         # the sum of the eigen values will add to 0. This will cause a TrueDivide error.
         if pcoa_output.eigvals.sum() == 0:
             raise EigenValsTooSmallError
+        
+        logging.info("Scaling PCoA output coordinates")
         pcoa_scaler = self._rescale_array(max_val=pcoa_output.samples.max().max(),
                                           min_val=pcoa_output.samples.min().min())
         pcoa_output.samples = pcoa_output.samples * pcoa_scaler
@@ -296,6 +439,10 @@ class TypeUnifracDistPCoACreator(BaseUnifracDistPCoACreator):
                               f"converted to 0s by skbio's implementation of PCoA.")
                 logging.error(f" Between profile Unifrac distances cannot be calculated for clade {clade_in_question}")
                 continue
+            except RuntimeError as e:
+                logging.error(f"PCoA calculation failed for clade {clade_in_question}: {e}")
+                logging.error(f"Between profile Unifrac PCoA cannot be calculated for clade {clade_in_question}")
+                continue
 
 
             clade_pcoa_file_path_no_sqrt, pcoa_coords_df_no_sqrt = self._write_out_pcoa(
@@ -368,7 +515,7 @@ class TypeUnifracDistPCoACreator(BaseUnifracDistPCoACreator):
         var_explained_list.extend(pcoa_output.proportion_explained.values.tolist())
 
         ser = pd.Series(var_explained_list, index=list(renamed_pcoa_dataframe), name='proportion_explained')
-        renamed_pcoa_dataframe = renamed_pcoa_dataframe.append(ser)
+        renamed_pcoa_dataframe = pd.concat([renamed_pcoa_dataframe, ser.to_frame().T])
         renamed_pcoa_dataframe['analysis_type_uid'] = renamed_pcoa_dataframe['analysis_type_uid'].astype(int)
         # now output the pcoa
         if sqrt:
@@ -705,6 +852,10 @@ class SampleUnifracDistPCoACreator(BaseUnifracDistPCoACreator):
                               f"converted to 0s by skbio's implementation of PCoA.")
                 logging.error(f"Between sample Unifrac Distances cannot be calculated for clade {clade_in_question}")
                 continue
+            except RuntimeError as e:
+                logging.error(f"PCoA calculation failed for clade {clade_in_question}: {e}")
+                logging.error(f"Between sample Unifrac PCoA cannot be calculated for clade {clade_in_question}")
+                continue
 
             clade_pcoa_file_path_no_sqrt, pcoa_coords_df_no_sqrt = self._write_out_pcoa(
                 ordered_sample_names_no_sqrt, pcoa_output_no_sqrt, clade_in_question, sqrt=False)
@@ -777,7 +928,7 @@ class SampleUnifracDistPCoACreator(BaseUnifracDistPCoACreator):
         var_explained_list = [0]
         var_explained_list.extend(pcoa_output.proportion_explained.values.tolist())
         ser = pd.Series(var_explained_list, index=list(renamed_pcoa_dataframe), name='proportion_explained')
-        renamed_pcoa_dataframe = renamed_pcoa_dataframe.append(ser)
+        renamed_pcoa_dataframe = pd.concat([renamed_pcoa_dataframe, ser.to_frame().T])
         renamed_pcoa_dataframe['sample_uid'] = renamed_pcoa_dataframe['sample_uid'].astype(int)
         # now output the pcoa
         if sqrt:
@@ -947,7 +1098,7 @@ class TreeCreatorForUniFrac:
         print('Testing models and making phylogenetic tree')
         print('This could take some time...')
         subprocess.run(
-            ['iqtree', '-T', 'AUTO', '--threads-max', '2', '-s', f'{self.fasta_aligned_path}'])
+            ['iqtree', '-T', 'AUTO', '--threads-max', str(min(self.parent.num_proc, 20)), '-s', f'{self.fasta_aligned_path}'])
 
         # root the tree
         print('Tree creation complete')
@@ -1023,19 +1174,25 @@ class BaseBrayCurtisDistPCoACreator:
             temp_two_d_list.append([float(a) for a in temp_elements[2:]])
 
         dist_as_np_array = np.array(temp_two_d_list)
+        matrix_size = len(object_names_from_dist_matrix)
 
-        sys.stdout.write('\rcalculating PCoA coordinates')
-
+        logging.info(f"Scaling distance matrix for {matrix_size} {self.profiles_or_samples}")
         dist_array_scaler = self._rescale_array(max_val=dist_as_np_array.max(), min_val=dist_as_np_array.min())
-
         dist_as_np_array = dist_as_np_array * dist_array_scaler
 
-        pcoa_output = pcoa(dist_as_np_array)
+        try:
+            pcoa_output = pcoa_with_timeout(dist_as_np_array, timeout=PCOA_TIMEOUT, matrix_size_hint=matrix_size)
+        except Exception as e:
+            logging.error(f"PCoA failed for clade {clade}: {e}")
+            raise
+        
         # When the pcoa calculation converts very small eigen values to 0
         # In doing this, if there were not large enougher eigen values,
         # the sum of the eigen values will add to 0. This will cause a TrueDivide error.
         if pcoa_output.eigvals.sum() == 0:
             raise EigenValsTooSmallError
+        
+        logging.info("Scaling PCoA output coordinates")
         pcoa_scaler = self._rescale_array(max_val=pcoa_output.samples.max().max(),
                                           min_val=pcoa_output.samples.min().min())
         pcoa_output.samples = pcoa_output.samples * pcoa_scaler
@@ -1045,8 +1202,8 @@ class BaseBrayCurtisDistPCoACreator:
         renamed_pcoa_dataframe = pcoa_output.samples.set_index('sample')
 
         # now add the variance explained as a final row to the renamed_dataframe
-        renamed_pcoa_dataframe = renamed_pcoa_dataframe.append(
-            pcoa_output.proportion_explained.rename('proportion_explained'))
+        variance_series = pcoa_output.proportion_explained.rename('proportion_explained')
+        renamed_pcoa_dataframe = pd.concat([renamed_pcoa_dataframe, variance_series.to_frame().T])
 
         object_ids_from_dist_matrix.append(0)
         if self.profiles_or_samples == 'samples':
@@ -1067,9 +1224,26 @@ class BaseBrayCurtisDistPCoACreator:
         # work through the magnitudes of order and see what the bigest scaler we can work with is
         # whilst still remaining below 1
         # Return the scaler by which we should multiply
+        
+        # Handle edge cases to prevent infinite loops
+        if max_val == 0 and min_val == 0:
+            return 1  # No scaling needed for all-zero matrix
+        
+        if max_val == min_val:
+            return 1  # No scaling needed if all values are identical
+        
+        # If values are extremely small, just return 1 to avoid precision issues
+        if abs(max_val) < 1e-10 and abs(min_val) < 1e-10:
+            return 1
+        
         query = 0.1
         scaler = 10
-        while 1:
+        max_iterations = 100  # Safety limit to prevent infinite loops
+        iterations = 0
+        
+        while iterations < max_iterations:
+            iterations += 1
+            
             if max_val > query:
                 # then we cannot multiply by the scaler
                 # revert back and break
@@ -1089,6 +1263,12 @@ class BaseBrayCurtisDistPCoACreator:
                 else:
                     scaler *= 10
                     query /= 10
+        
+        # Safety check: if we hit max iterations, just return 1
+        if iterations >= max_iterations:
+            logging.warning(f"_rescale_array hit iteration limit with max_val={max_val}, min_val={min_val}")
+            return 1
+            
         # now scale the df by the scaler unless it is 1
         return scaler
 
@@ -1363,6 +1543,10 @@ class SampleBrayCurtisDistPCoACreator(BaseBrayCurtisDistPCoACreator):
                               f"converted to 0s by skbio's implementation of PCoA.")
                 logging.error(f"Between sample Bray-Curtis distances cannot be calculated for clade {clade_in_question}")
                 continue
+            except RuntimeError as e:
+                logging.error(f"PCoA calculation failed for clade {clade_in_question}: {e}")
+                logging.error(f"Between sample Bray-Curtis PCoA cannot be calculated for clade {clade_in_question}")
+                continue
 
             self._populate_js_output_objects(clade_in_question, pcoa_coords_df_sqrt, sqrt=True)
             self._populate_js_output_objects(clade_in_question, pcoa_coords_df_no_sqrt, sqrt=False)
@@ -1548,6 +1732,10 @@ class TypeBrayCurtisDistPCoACreator(BaseBrayCurtisDistPCoACreator):
                 logging.error(f"The eigenvalues for the clade {clade_in_question} PCoA were too small and were "
                               f"converted to 0s by skbio's implementation of PCoA.")
                 logging.error(f"Between profile Bray-Curtis distances cannot be calculated for clade {clade_in_question}")
+                continue
+            except RuntimeError as e:
+                logging.error(f"PCoA calculation failed for clade {clade_in_question}: {e}")
+                logging.error(f"Between profile Bray-Curtis PCoA cannot be calculated for clade {clade_in_question}")
                 continue
 
 
