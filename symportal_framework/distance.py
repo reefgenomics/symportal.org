@@ -81,7 +81,7 @@ def pcoa_with_timeout(dist_array, timeout=PCOA_TIMEOUT, matrix_size_hint=None):
     
     # Check for NaN or Inf values
     if np.any(np.isnan(data)) or np.any(np.isinf(data)):
-        raise ValueError("Distance matrix contains NaN or Inf values")
+        raise RuntimeError("Distance matrix contains NaN or Inf values")
     
     # Check for negative values (shouldn't happen with distance matrices)
     if np.any(data < 0):
