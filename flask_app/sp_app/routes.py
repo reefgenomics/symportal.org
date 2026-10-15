@@ -25,6 +25,7 @@ from werkzeug.urls import url_parse
 from sqlalchemy.orm.exc import NoResultFound
 
 from sp_app.datasheet_check import (DatasheetChecker,
+                                    read_datasheet,
                                     DatasheetGeneralFormattingError,
                                     AddedFilesError,
                                     UploadedFilesError,
@@ -369,11 +370,11 @@ def _check_submission():
                     "add_or_upload": "add",
                     "error":True,
                     "border_class": "border-danger",
-                    "message":'<strong class="text-danger">Please select a single datasheet (.xlsx, .csv)</strong>'
+                    "message":'<strong class="text-danger">Please select a single datasheet (.xlsx)</strong>'
                 }
                 return jsonify(response)
             file_name = [k for k, v in data_dict["files"][0].items()][0]
-            if file_name.endswith(".xlsx") or file_name.endswith(".csv"):
+            if file_name.endswith(".xlsx"):
                 response = {
                     "check_type": "datasheet",
                     "add_or_upload": "add",
@@ -388,7 +389,7 @@ def _check_submission():
                     "add_or_upload": "add",
                     "error": True,
                     "border_class": "border-danger",
-                    "message": '<strong class="text-danger">Please select a single datasheet (.xlsx, .csv)</strong>'
+                    "message": '<strong class="text-danger">Please select a single datasheet (.xlsx)</strong>'
                 }
                 return jsonify(response)
         else:
@@ -410,7 +411,7 @@ def _check_submission():
                             dc.binomial_dict or dc.lat_long_dict or
                             dc.lat_lon_missing or dc.date_missing_list or
                             dc.depth_missing_list or dc.sample_type_missing_list or
-                            dc.taxonomy_missing_set
+                            dc.taxonomy_missing_set or dc.issues.warnings
                     ):
                         response = {
                             "check_type": "seq_files", "add_or_upload": "add",
@@ -422,6 +423,7 @@ def _check_submission():
                                 'depth_missing': dc.depth_missing_list,
                                 'sample_type_missing':dc.sample_type_missing_list,
                                 'taxonomy_missing': list(dc.taxonomy_missing_set),
+                                'general_warnings': dc.issues.warnings_html(heading=False),
                             },
                             "border_class": "border-warning"
                         }
@@ -450,6 +452,15 @@ def _check_submission():
                 except DateFormatError as e:
                     response = {
                         "error_type": "DateFormatError", "check_type": "seq_files", "add_or_upload": "add",
+                        'error': True, 'message': str(e),
+                        "data": e.data,
+                        "border_class": "border-danger"
+                    }
+                    return jsonify(response)
+                except DatasheetGeneralFormattingError as e:
+                    # Then there are problems with the datasheet itself
+                    response = {
+                        "error_type": "datasheet_issues", "check_type": "seq_files", "add_or_upload": "add",
                         'error': True, 'message': str(e),
                         "data": e.data,
                         "border_class": "border-danger"
@@ -504,11 +515,14 @@ def _check_submission():
                     # unhandled errors" and pass back this error to the
                     # browser to inform the user.
                     dc.do_general_format_check()
+                    message = (f'<strong class="text-success">Datasheet {dc.datasheet_filename} '
+                               f'containing {len(dc.sample_meta_info_df.index)} '
+                               f"samples successfully uploaded.</strong><br>Please select your seq files")
+                    if dc.issues.warnings:
+                        message += f'<br><br>{dc.issues.warnings_html()}'
                     response = {
                         'error': False,
-                        'message': f'<strong class="text-success">Datasheet {dc.datasheet_filename} '
-                                   f'containing {len(dc.sample_meta_info_df.index)} '
-                                   f"samples successfully uploaded.</strong><br>Please select your seq files",
+                        'message': message,
                         "num_samples": len(dc.sample_meta_info_df.index),
                         "response_type": "datasheet",
                         "datasheet_filename": dc.datasheet_filename,
@@ -516,43 +530,14 @@ def _check_submission():
                     }
                     return jsonify(response)
                 except DatasheetGeneralFormattingError as e:
-                    if e.data["error_type"] == "non_unique":
-                        response = {
-                            'error': True, 'message': str(e),
-                            "data": e.data["non_unique_data"],
-                            "error_type": "non_unique",
-                            "response_type": "datasheet",
-                            "border_class": "border-danger"
-                        }
-                    elif e.data["error_type"] == "full_path":
-                        response = {
-                            'error': True, 'message': str(e),
-                            "data": e.data["example_filename"],
-                            "error_type": "full_path",
-                            "response_type": "datasheet",
-                            "border_class": "border-danger"
-                        }
-                    elif e.data["error_type"] == "df_empty":
-                        response = {
-                            'error': True, 'message': str(e),
-                            "error_type": "df_empty",
-                            "response_type": "datasheet",
-                            "border_class": "border-danger"
-                        }
-                    elif e.data["error_type"] == "invalid_file_format":
-                        response = {
-                            'error': True, 'message': str(e),
-                            "error_type": "invalid_file_format",
-                            "response_type": "datasheet",
-                            "border_class": "border-danger"
-                        }
-                    elif e.data["error_type"] == "invalid_sample_name_format":
-                        response = {
-                            'error': True, 'message': str(e),
-                            "error_type": "invalid_sample_name_format",
-                            "response_type": "datasheet",
-                            "border_class": "border-danger"
-                        }
+                    # The message lists every problem that was found in the datasheet
+                    response = {
+                        'error': True, 'message': str(e),
+                        "data": e.data,
+                        "error_type": e.data["error_type"],
+                        "response_type": "datasheet",
+                        "border_class": "border-danger"
+                    }
                     os.remove(dc.datasheet_path)
                     return jsonify(response)
             except Exception as e:
@@ -801,21 +786,8 @@ def _load_data_sheet_df():
     # Load the datasheet as a df
     user_upload_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.name)
     datasheet_path = os.path.join(user_upload_path, request.form['datasheet_filename'])
-    if datasheet_path.endswith('.xlsx'):
-        df = pd.read_excel(
-            io=datasheet_path, header=0, usecols='A:N', skiprows=[0])
-    elif datasheet_path.endswith('.csv'):
-        with open(datasheet_path, 'r') as f:
-            datasheet_as_file = [line.rstrip() for line in f]
-        if datasheet_as_file[0].split(',')[0] == 'sample_name':
-            df = pd.read_csv(
-                filepath_or_buffer=datasheet_path)
-        else:
-            df = pd.read_csv(
-                filepath_or_buffer=datasheet_path, skiprows=[0])
-    else:
-        raise RuntimeError(f'Data sheet: {datasheet_path} is in an unrecognised format. '
-                           f'Please ensure that it is either in .xlsx or .csv format.')
+    # Read in the same way as the datasheet was read in when it was checked
+    df = read_datasheet(datasheet_path)
     return df, user_upload_path
 
 

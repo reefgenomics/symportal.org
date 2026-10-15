@@ -73,7 +73,7 @@ $(document).ready(function() {
         }
 
         function prepare_DOM_for_datasheet_upload(response){
-            // Then the user selected a single .csv or .xlsx. Prepare DOM for upload of the selected datasheet.
+            // Then the user selected a single .xlsx. Prepare DOM for upload of the selected datasheet.
             // Disable the Add datasheet button so that no further files can be added before the upload
             document.querySelector("#fileinput-button").setAttribute("disabled", "");
             // Enable the upload datasheet button
@@ -93,7 +93,7 @@ $(document).ready(function() {
                 // Then there was some sort of error. Reset submission.
                 reset_submission_buttons_and_display_message(response["message"], response["border_class"]);
             }else{
-                // Then the user selected a single .csv or .xlsx. Prepare DOM for upload of the selected datasheet.
+                // Then the user selected a single .xlsx. Prepare DOM for upload of the selected datasheet.
                 prepare_DOM_for_datasheet_upload(response);
             }
         }
@@ -131,9 +131,25 @@ $(document).ready(function() {
                     construct_and_display_error_message_LatLonError(response)
                 }else if(response.error_type == "DateFormatError"){
                     construct_and_display_error_message_DateFormatError(response)
+                }else if(response.error_type == "datasheet_issues"){
+                    construct_and_display_error_message_datasheet_issues(response)
                 }
                 
             }
+        }
+
+        function construct_and_display_error_message_datasheet_issues(response){
+            // The message lists every problem that was found in the datasheet
+            let message = response.message;
+            message += "<br>To fix the above problems: <br>Hit the 'Reset' button and upload a modified datasheet.<br>"
+            display_feedback(message, response["border_class"]);
+
+            // Activate the reset button
+            document.querySelector("#reset").removeAttribute("disabled");
+
+            // Disable the Upload seq files button
+            document.querySelector("#start_upload_btn").setAttribute("disabled", "");
+            reveal_staging_table();
         }
 
         function construct_and_display_error_message_DateFormatError(response){
@@ -297,6 +313,10 @@ $(document).ready(function() {
                 });
                 message += "<br>"
             }
+            if (response.data.general_warnings){
+                // The warnings that were found when checking the datasheet, already formatted
+                message += response.data.general_warnings;
+            }
 
             display_feedback(message, response["border_class"]);
             // Enable the upload datasheet button
@@ -344,7 +364,7 @@ $(document).ready(function() {
         // This case will be handled in routes.py
 
         // We also want to send up the value of the data-datasheet-filename
-        // If this is "" then the user should have selected only a single .csv or .xlsx
+        // If this is "" then the user should have selected only a single .xlsx
         // Else, then this is the user selecting sequencing files
         // and we should only be receiving sequencing files and we will run the checks on
         // agreement between the datasheet and the sequencing files submitted.
@@ -364,7 +384,7 @@ $(document).ready(function() {
             success: function(response){
                 if (response["check_type"] == "datasheet" && response["add_or_upload"] == "add"){
                     // Then we checked to see that the user was only selecting a single file
-                    // And that that file was a .xlsx or .csv.
+                    // And that that file was a .xlsx.
                     process_datasheet_select_ajax_response(response);
                 }else{
                     // Then this is the response from checking the seq files
@@ -391,7 +411,7 @@ $(document).ready(function() {
         previewsContainer: "#previews", // Define the container to display the previews
         clickable: "#fileinput-button",
         uploadMultiple: true,
-        acceptedFiles: ".csv,.xlsx,.gz",
+        acceptedFiles: ".xlsx,.gz",
         error: function (file, response) {
             console.log("Error");
             console.log(response);
@@ -480,7 +500,7 @@ $(document).ready(function() {
         },
         sendingmultiple: function(files, xhr, formData){
             // This will be fired either when we are uploading a datasheet, or when we are doing the final submission
-            // (i.e. after having checked that only a single .csv/.xlsx has been uploaded or after checking that
+            // (i.e. after having checked that only a single .xlsx has been uploaded or after checking that
             // all is in agreement between an uploaded datasheet and a set of sequencing files).
             // If this.files.length > 1 then it is final upload of seq data
             function disable_buttons(){
